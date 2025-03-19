@@ -1,5 +1,5 @@
 import Box2D
-from Box2D import b2World, b2Vec2, b2PolygonShape, b2CircleShape, b2BodyDef, b2_dynamicBody, b2_staticBody
+from Box2D import b2World, b2Vec2, b2PolygonShape, b2CircleShape, b2BodyDef, b2_dynamicBody, b2_staticBody, b2_kinematicBody
 from src.utils.logger import Logger
 
 class PhysicsEngine:
@@ -86,11 +86,28 @@ class PhysicsEngine:
             self.world.gravity = b2Vec2(0, 0)
             self.logger.info("Gravity turned OFF")
         
+    def set_object_kinematic(self, obj_id, is_kinematic):
+        """Set whether an object should be kinematic (moved by game code) or dynamic (moved by physics)."""
+        for obj in self.object_manager.get_objects():
+            if obj.id == obj_id and obj.body:
+                if is_kinematic:
+                    # Make kinematic
+                    obj.body.type = b2_kinematicBody
+                else:
+                    # Make dynamic
+                    obj.body.type = b2_dynamicBody
+                return True
+        return False
+    
     def update(self, dt):
         """Update physics world and sync with game objects."""
         # Create physics bodies for new objects
         for obj in self.object_manager.get_objects():
             if not obj.body:
+                self.create_physics_body(obj)
+            elif hasattr(obj.body, 'userData') and obj.body.userData and obj.body.userData.get('needs_rebuild', False):
+                # Recreate body if needed (e.g., after resizing)
+                self.world.DestroyBody(obj.body)
                 self.create_physics_body(obj)
                 
         # Create sensors for new portals

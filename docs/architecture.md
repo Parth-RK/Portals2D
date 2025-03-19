@@ -15,7 +15,7 @@ The 2D Portals Game is designed with a modular architecture to ensure maintainab
 
 ### 2. **Input Manager**
 - Captures and processes user inputs (keyboard and mouse).
-- Maps inputs to game actions such as adding/deleting objects, resizing, and toggling gravity.
+- Maps inputs to game actions such as adding/deleting objects, resizing, toggling gravity, and creating portals.
 - **Files:**
   - `src/core/input_manager.py`
 
@@ -40,7 +40,7 @@ The 2D Portals Game is designed with a modular architecture to ensure maintainab
   - `src/rendering/renderer.py`
 
 ### 6. **UI Manager**
-- Handles in-game controls for object manipulation and gravity toggling.
+- Handles in-game controls for object manipulation, gravity toggling, and portal creation.
 - Provides a simple and lightweight interface for user interactions.
 - **Files:**
   - `src/ui/ui_manager.py`
@@ -61,4 +61,4 @@ The 2D Portals Game is designed with a modular architecture to ensure maintainab
 
 - **Performance:** Optimized for low-spec hardware with efficient rendering and physics updates.
 - **Modularity:** Clear separation of concerns to facilitate maintenance and future enhancements.
-- **Scalability:** Designed to handle increasing complexity, such as additional object types or advanced physics features.
+- **Scalability:** Designed to handle increasing complexity, such as additional object types, advanced physics features, and multiple portal pairs.

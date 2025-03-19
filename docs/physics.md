@@ -25,6 +25,11 @@ The physics system is built on Box2D to provide realistic 2D physics simulation.
 - Position and velocity are recalculated to ensure seamless transitions.
 - Handles edge cases such as partial overlaps and blocked exits.
 
+### 5. **Object Manipulation**
+- Clicking on an object allows the user to hold and drag it around.
+- Releasing the mouse while dragging throws the object with momentum.
+- Right-clicking on an object opens a context menu to modify its size and orientation.
+
 ## Implementation Details
 
 ### Fixed Time Step

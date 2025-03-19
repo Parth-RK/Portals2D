@@ -41,9 +41,42 @@ class GameLoop:
                 obj_type, pos_x, pos_y = cmd.split(":")[1:]
                 self.object_manager.create_object(obj_type, float(pos_x), float(pos_y))
             elif cmd.startswith("CREATE_PORTAL"):
-                portal_id, pos_x, pos_y, angle = cmd.split(":")[1:]
+                color, portal_id, pos_x, pos_y, angle = cmd.split(":")[1:]
                 self.object_manager.create_portal(
-                    portal_id, float(pos_x), float(pos_y), float(angle))
+                    color, portal_id, float(pos_x), float(pos_y), float(angle))
+            elif cmd.startswith("TRY_GRAB_OBJECT"):
+                pos_x, pos_y = cmd.split(":")[1:]
+                obj = self.object_manager.get_object_at_position(float(pos_x), float(pos_y))
+                if obj:
+                    self.input_manager.set_dragged_object(obj.id)
+                    # Temporarily make object kinematic while dragged
+                    self.physics_engine.set_object_kinematic(obj.id, True)
+            elif cmd.startswith("DRAG_OBJECT"):
+                obj_id, pos_x, pos_y = cmd.split(":")[1:]
+                self.object_manager.move_object_to(obj_id, float(pos_x), float(pos_y))
+            elif cmd.startswith("THROW_OBJECT"):
+                obj_id, vel_x, vel_y = cmd.split(":")[1:]
+                self.physics_engine.set_object_kinematic(obj_id, False)
+                self.object_manager.set_object_velocity(obj_id, float(vel_x), float(vel_y))
+            elif cmd.startswith("TRY_OPEN_CONTEXT_MENU"):
+                pos_x, pos_y = cmd.split(":")[1:]
+                obj = self.object_manager.get_object_at_position(float(pos_x), float(pos_y))
+                if obj:
+                    self.ui_manager.open_context_menu(obj, float(pos_x), float(pos_y))
+                    self.input_manager.set_context_menu_open(True, obj.id)
+            elif cmd.startswith("CONTEXT_MENU_SELECT"):
+                pos_x, pos_y = cmd.split(":")[1:]
+                action = self.ui_manager.handle_context_menu_click(float(pos_x), float(pos_y))
+                if action:
+                    if action.startswith("RESIZE"):
+                        _, obj_id, scale = action.split(":")
+                        self.object_manager.resize_object(obj_id, float(scale))
+                    elif action.startswith("ROTATE"):
+                        _, obj_id, angle = action.split(":")
+                        self.object_manager.rotate_object(obj_id, float(angle))
+            elif cmd == "CLOSE_CONTEXT_MENU":
+                self.ui_manager.close_context_menu()
+                self.input_manager.set_context_menu_open(False)
                 
     def update(self, dt):
         """Update game state with fixed time step."""

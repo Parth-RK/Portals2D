@@ -3,8 +3,9 @@ from Box2D import b2Vec2
 import pygame
 
 class Portal:
-    def __init__(self, portal_id, x, y, angle):
+    def __init__(self, portal_id, color, x, y, angle):
         self.id = portal_id
+        self.color = color
         self.position = b2Vec2(x, y)
         self.angle = angle
         self.width = 10
@@ -13,21 +14,33 @@ class Portal:
         self.sensor = None  # Will be set by physics engine
         
         # Set color based on portal type
-        if portal_id == "BLUE":
-            self.color = (0, 100, 255)  # Blue
-        elif portal_id == "ORANGE":
-            self.color = (255, 165, 0)  # Orange
-        else:
-            self.color = (128, 0, 128)  # Purple (for undefined portals)
+        self.set_color_by_type(color)
             
         # Object cache for preventing immediate re-entry
         self.recently_teleported = set()
         self.teleport_cooldown = 0.5  # seconds
         self.cooldown_timers = {}
+    
+    def set_color_by_type(self, color):
+        """Set the display color based on portal color name."""
+        color_map = {
+            "BLUE": (0, 100, 255),     # Blue
+            "ORANGE": (255, 165, 0),   # Orange
+            "GREEN": (0, 255, 0),      # Green
+            "PURPLE": (128, 0, 128),   # Purple
+            "YELLOW": (255, 255, 0),   # Yellow
+            "CYAN": (0, 255, 255),     # Cyan
+            "MAGENTA": (255, 0, 255),  # Magenta
+        }
+        self.display_color = color_map.get(color, (128, 128, 128))  # Default gray
             
     def link_portal(self, other_portal):
         """Link this portal with another portal."""
         self.linked_portal = other_portal
+        
+    def unlink_portal(self):
+        """Remove any portal linking."""
+        self.linked_portal = None
         
     def is_linked(self):
         """Check if this portal is linked to another."""
