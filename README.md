@@ -19,7 +19,7 @@ A 2D physics-based game inspired by the portal mechanics from Valve's Portal gam
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/Parth-RK/Portals2D.git
 cd Portals2D
 ```
 
