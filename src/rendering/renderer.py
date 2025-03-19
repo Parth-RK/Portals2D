@@ -81,18 +81,37 @@ class Renderer:
         # Create a surface for the portal
         portal_surface = pygame.Surface((portal.width, portal.height), pygame.SRCALPHA)
         
-        # Use portal.color (which now contains the RGB tuple)
+        # Use portal.color (which contains the RGB tuple)
+        portal_color = portal.color
+        
+        # Draw the main portal rectangle
         pygame.draw.rect(
             portal_surface,
-            portal.color,
+            portal_color,
             (0, 0, portal.width, portal.height)
         )
         
-        # Add a glow effect - get color components and ensure alpha component is valid
-        r, g, b = portal.color[0], portal.color[1], portal.color[2]
+        # Add a glow effect - get color components
+        r, g, b = portal_color[0], portal_color[1], portal_color[2]
+        
+        # Create glow with semi-transparency
         glow_color = (r, g, b, 128)  # Add alpha for glow effect
+        
+        # Add an inner highlight for a more portal-like appearance
+        highlight_color = (min(r + 70, 255), min(g + 70, 255), min(b + 70, 255), 200)
+        highlight_rect = pygame.Rect(portal.width * 0.25, portal.height * 0.25, 
+                                    portal.width * 0.5, portal.height * 0.5)
+        pygame.draw.rect(portal_surface, highlight_color, highlight_rect)
+        
+        # Add outer glow
         glow_rect = pygame.Rect(-5, -5, portal.width + 10, portal.height + 10)
         pygame.draw.rect(portal_surface, glow_color, glow_rect, 5)
+        
+        # Portal connection indicator (draw a small indicator if portal is linked)
+        if portal.linked_portal:
+            # Draw a small dot in the center to indicate connection
+            pygame.draw.circle(portal_surface, (255, 255, 255), 
+                              (portal.width // 2, portal.height // 2), 3)
         
         # Rotate the portal
         angle_degrees = math.degrees(portal.angle)

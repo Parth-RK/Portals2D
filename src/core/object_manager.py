@@ -66,7 +66,7 @@ class ObjectManager:
         """Remove a portal by ID."""
         if portal_id in self.portals:
             portal = self.portals[portal_id]
-            color = portal.color
+            color = portal.color_name  # Use color_name we added in Portal class
             
             # Remove from portal pairs
             if color in self.portal_pairs:
@@ -86,7 +86,7 @@ class ObjectManager:
         
     def get_portals(self):
         """Return all managed portals."""
-        return self.portals.values()
+        return list(self.portals.values())
         
     def get_object_at_position(self, x, y):
         """Find object at the given position."""
@@ -112,14 +112,39 @@ class ObjectManager:
                 # Check if point is inside the box
                 if (abs(rx) <= obj.width / 2) and (abs(ry) <= obj.height / 2):
                     return obj
+        
+        # If no object found, check portals
+        for portal in self.portals.values():
+            # Transform point to portal's local space
+            dx = x - portal.position.x
+            dy = y - portal.position.y
+            
+            # Rotate point
+            cos_angle = math.cos(-portal.angle)
+            sin_angle = math.sin(-portal.angle)
+            rx = dx * cos_angle - dy * sin_angle
+            ry = dx * sin_angle + dy * cos_angle
+            
+            # Check if point is inside the portal
+            if (abs(rx) <= portal.width / 2) and (abs(ry) <= portal.height / 2):
+                return portal
+                
         return None
     
     def move_object_to(self, obj_id, x, y):
         """Move an object to a specified position."""
+        # Check if it's a regular object
         for obj in self.objects:
             if obj.id == obj_id:
                 obj.set_position(x, y)
                 return True
+        
+        # Check if it's a portal
+        for portal in self.portals.values():
+            if portal.id == obj_id:
+                portal.set_position(x, y)
+                return True
+                
         return False
     
     def set_object_velocity(self, obj_id, vx, vy):
@@ -132,6 +157,7 @@ class ObjectManager:
     
     def resize_object(self, obj_id, scale):
         """Resize an object by a scale factor."""
+        # Try regular objects first
         for obj in self.objects:
             if obj.id == obj_id:
                 if obj.obj_type == "CIRCLE":
@@ -143,15 +169,33 @@ class ObjectManager:
                 if obj.body:
                     obj.body.userData = {"needs_rebuild": True}
                 return True
+        
+        # Try portals
+        for portal in self.portals.values():
+            if portal.id == obj_id:
+                portal.resize(scale)
+                return True
+                
         return False
     
     def rotate_object(self, obj_id, angle_degrees):
         """Rotate an object to the specified angle in degrees."""
+        # Try regular objects
         for obj in self.objects:
             if obj.id == obj_id:
-                angle_rad = math.radians(angle_degrees)
-                obj.set_angle(angle_rad)
+                current_angle = obj.angle
+                new_angle = current_angle + math.radians(angle_degrees)
+                obj.set_angle(new_angle)
                 return True
+                
+        # Try portals
+        for portal in self.portals.values():
+            if portal.id == obj_id:
+                current_angle = portal.angle
+                new_angle = current_angle + math.radians(angle_degrees)
+                portal.set_angle(new_angle)
+                return True
+                
         return False
         
     def update(self, dt):
@@ -165,7 +209,7 @@ class ObjectManager:
                 self.remove_object(obj)
                 
         # Update portals
-        for portal in self.portals.values():
+        for portal in list(self.portals.values()):
             portal.update(dt)
             
         # Check for portal interactions

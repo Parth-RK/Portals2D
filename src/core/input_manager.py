@@ -72,7 +72,10 @@ class InputManager:
                     color = self.portal_colors[self.current_portal_color_index]
                     portal_id = f"{self.portal_pair_count[color] % 2}"
                     
-                    commands.append(f"CREATE_PORTAL:{color}:{portal_id}:{self.mouse_pos[0]}:{self.mouse_pos[1]}:0")
+                    # When creating portals, prefer to give them a vertical orientation by default
+                    default_angle = 0  # Vertical orientation
+                    
+                    commands.append(f"CREATE_PORTAL:{color}:{portal_id}:{self.mouse_pos[0]}:{self.mouse_pos[1]}:{default_angle}")
                     
                     # Update portal state
                     self.portal_pair_count[color] += 1

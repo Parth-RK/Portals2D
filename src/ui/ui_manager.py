@@ -158,12 +158,22 @@ class UIManager:
         self.context_menu_pos = (x, y)
         
         # Create menu items based on object type
-        self.context_menu_items = [
-            {"label": "Increase Size", "action": f"RESIZE:{obj.id}:1.2"},
-            {"label": "Decrease Size", "action": f"RESIZE:{obj.id}:0.8"},
-            {"label": "Rotate 45° CW", "action": f"ROTATE:{obj.id}:45"},
-            {"label": "Rotate 45° CCW", "action": f"ROTATE:{obj.id}:-45"}
-        ]
+        if hasattr(obj, 'obj_type'):  # It's a GameObject
+            self.context_menu_items = [
+                {"label": "Increase Size", "action": f"RESIZE:{obj.id}:1.2"},
+                {"label": "Decrease Size", "action": f"RESIZE:{obj.id}:0.8"},
+                {"label": "Rotate 45° CW", "action": f"ROTATE:{obj.id}:45"},
+                {"label": "Rotate 45° CCW", "action": f"ROTATE:{obj.id}:-45"}
+            ]
+        else:  # It's a Portal
+            self.context_menu_items = [
+                {"label": "Increase Size", "action": f"RESIZE:{obj.id}:1.2"},
+                {"label": "Decrease Size", "action": f"RESIZE:{obj.id}:0.8"},
+                {"label": "Rotate 45° CW", "action": f"ROTATE:{obj.id}:45"},
+                {"label": "Rotate 45° CCW", "action": f"ROTATE:{obj.id}:-45"},
+                {"label": "Rotate 90° CW", "action": f"ROTATE:{obj.id}:90"},
+                {"label": "Rotate 90° CCW", "action": f"ROTATE:{obj.id}:-90"}
+            ]
         
         self.logger.info(f"Opened context menu for object {obj.id}")
         

@@ -44,6 +44,9 @@ class PhysicsEngine:
         body_def.angle = game_object.angle
         body = self.world.CreateBody(body_def)
         
+        # Store reference to the game object for collision detection
+        body.userData = game_object
+        
         # Create shape based on object type
         if game_object.obj_type == "CIRCLE":
             shape = b2CircleShape(radius=game_object.radius)
@@ -61,15 +64,26 @@ class PhysicsEngine:
         
     def create_portal_sensor(self, portal):
         """Create a sensor for portal detection."""
+        # If the portal already has a body, destroy it first
+        if portal.sensor:
+            if hasattr(portal.sensor, "userData") and portal.sensor.userData and portal.sensor.userData.get("needs_rebuild", False):
+                self.world.DestroyBody(portal.sensor)
+            else:
+                return  # Sensor already exists and doesn't need rebuild
+        
         body_def = b2BodyDef()
         body_def.position = (portal.position.x, portal.position.y)
         body_def.angle = portal.angle
         body = self.world.CreateBody(body_def)
         
+        # Store reference to the portal for collision detection
+        body.userData = portal
+        
         # Create a rectangular sensor
         shape = b2PolygonShape()
         shape.SetAsBox(portal.width / 2, portal.height / 2)
         fixture = body.CreateFixture(shape=shape, isSensor=True)
+        fixture.userData = "portal_sensor"  # Tag the fixture for identification
         
         # Attach sensor to portal
         portal.sensor = body
@@ -105,16 +119,22 @@ class PhysicsEngine:
         for obj in self.object_manager.get_objects():
             if not obj.body:
                 self.create_physics_body(obj)
-            elif hasattr(obj.body, 'userData') and obj.body.userData and obj.body.userData.get('needs_rebuild', False):
+            elif hasattr(obj.body, 'userData') and obj.body.userData and isinstance(obj.body.userData, dict) and obj.body.userData.get('needs_rebuild', False):
                 # Recreate body if needed (e.g., after resizing)
                 self.world.DestroyBody(obj.body)
                 self.create_physics_body(obj)
                 
-        # Create sensors for new portals
+        # Create sensors for portals
         for portal in self.object_manager.get_portals():
-            if not portal.sensor:
+            if not portal.sensor or (hasattr(portal.sensor, 'userData') and isinstance(portal.sensor.userData, dict) and portal.sensor.userData.get('needs_rebuild', False)):
                 self.create_portal_sensor(portal)
                 
         # Step the physics simulation
         self.world.Step(dt, 8, 3)
         self.world.ClearForces()
+        
+        # Check for portal collisions after physics step
+        for obj in self.object_manager.get_objects():
+            for portal in self.object_manager.get_portals():
+                if portal.is_linked() and portal.check_collision(obj):
+                    portal.teleport_object(obj)

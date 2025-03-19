@@ -34,6 +34,8 @@ class Portal:
         }
         # Store the RGB color value in self.color for rendering
         self.color = color_map.get(color, (128, 128, 128))  # Default gray
+        # Store the color name for reference
+        self.color_name = color
             
     def link_portal(self, other_portal):
         """Link this portal with another portal."""
@@ -61,12 +63,13 @@ class Portal:
             
     def check_collision(self, game_object):
         """Check if an object is colliding with this portal."""
-        if not self.sensor or game_object.id in self.recently_teleported:
+        if not self.sensor or not game_object.body or game_object.id in self.recently_teleported:
             return False
             
-        # Use Box2D sensor collision detection
-        for contact in self.sensor.contacts:
-            if contact.other == game_object.body:
+        # Check for collision between object and portal sensor
+        for contact_edge in game_object.body.contacts:
+            contact = contact_edge.contact
+            if (contact.fixtureA.body == self.sensor or contact.fixtureB.body == self.sensor) and contact.touching:
                 return True
                 
         return False
@@ -80,7 +83,7 @@ class Portal:
         local_pos = game_object.position - self.position
         
         # Rotate the local position by the difference in portal angles
-        angle_diff = self.linked_portal.angle - self.angle
+        angle_diff = self.linked_portal.angle - self.angle + math.pi  # Add pi to flip the direction
         cos_angle = math.cos(angle_diff)
         sin_angle = math.sin(angle_diff)
         rotated_x = local_pos.x * cos_angle - local_pos.y * sin_angle
@@ -99,8 +102,9 @@ class Portal:
             rotated_vx = normalized.x * cos_angle - normalized.y * sin_angle
             rotated_vy = normalized.x * sin_angle + normalized.y * cos_angle
             
-            # Apply rotated velocity with original magnitude
-            new_velocity = b2Vec2(rotated_vx * vel_mag, rotated_vy * vel_mag)
+            # Scale velocity (can add a boost factor here if desired)
+            boost_factor = 1.0  # No boost by default
+            new_velocity = b2Vec2(rotated_vx * vel_mag * boost_factor, rotated_vy * vel_mag * boost_factor)
             game_object.set_velocity(new_velocity.x, new_velocity.y)
         
         # Set new position
@@ -120,12 +124,22 @@ class Portal:
         """Update portal state."""
         # Update cooldown timers
         keys_to_remove = []
-        for obj_id, timer in self.cooldown_timers.items():
+        for obj_id, timer in list(self.cooldown_timers.items()):
             self.cooldown_timers[obj_id] -= dt
             if self.cooldown_timers[obj_id] <= 0:
                 keys_to_remove.append(obj_id)
                 
         # Remove expired cooldowns
         for obj_id in keys_to_remove:
-            self.recently_teleported.remove(obj_id)
+            if obj_id in self.recently_teleported:
+                self.recently_teleported.remove(obj_id)
             del self.cooldown_timers[obj_id]
+            
+    def resize(self, scale):
+        """Resize the portal."""
+        self.width *= scale
+        self.height *= scale
+        # Recreate the sensor in physics engine
+        if self.sensor:
+            self.sensor.userData = {"needs_rebuild": True}
+        return True

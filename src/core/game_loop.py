@@ -59,16 +59,24 @@ class GameLoop:
                 pos_x, pos_y = cmd.split(":")[1:]
                 obj = self.object_manager.get_object_at_position(float(pos_x), float(pos_y))
                 if obj:
-                    self.input_manager.set_dragged_object(obj.id)
-                    # Temporarily make object kinematic while dragged
-                    self.physics_engine.set_object_kinematic(obj.id, True)
+                    # Check if it's a regular game object or a portal
+                    if hasattr(obj, 'obj_type'):  # It's a regular game object
+                        self.input_manager.set_dragged_object(obj.id)
+                        # Temporarily make object kinematic while dragged
+                        self.physics_engine.set_object_kinematic(obj.id, True)
+                    else:  # It's a portal, which can also be dragged
+                        self.input_manager.set_dragged_object(obj.id)
             elif cmd.startswith("DRAG_OBJECT"):
                 obj_id, pos_x, pos_y = cmd.split(":")[1:]
                 self.object_manager.move_object_to(obj_id, float(pos_x), float(pos_y))
             elif cmd.startswith("THROW_OBJECT"):
                 obj_id, vel_x, vel_y = cmd.split(":")[1:]
-                self.physics_engine.set_object_kinematic(obj_id, False)
-                self.object_manager.set_object_velocity(obj_id, float(vel_x), float(vel_y))
+                # Only apply velocity to regular game objects, not portals
+                for obj in self.object_manager.get_objects():
+                    if obj.id == obj_id:
+                        self.physics_engine.set_object_kinematic(obj_id, False)
+                        self.object_manager.set_object_velocity(obj_id, float(vel_x), float(vel_y))
+                        break
             elif cmd.startswith("TRY_OPEN_CONTEXT_MENU"):
                 pos_x, pos_y = cmd.split(":")[1:]
                 obj = self.object_manager.get_object_at_position(float(pos_x), float(pos_y))
