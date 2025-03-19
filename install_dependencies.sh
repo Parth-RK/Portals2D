@@ -64,6 +64,44 @@ else
     rm -rf box2d
 fi
 
+# Handle Box2D configuration issues
+handle_box2d_config() {
+    echo "Ensuring Box2D is properly configured..."
+    
+    # Check if Box2D config files exist in standard locations
+    if [ ! -f "/usr/local/lib/cmake/box2d/box2dConfig.cmake" ] && 
+       [ ! -f "/usr/lib/cmake/Box2D/Box2DConfig.cmake" ]; then
+        echo "Box2D configuration files not found in standard locations."
+        echo "Attempting to resolve Box2D configuration issues..."
+        
+        # Manual installation of Box2D with proper configuration
+        echo "Installing Box2D from source with proper configuration..."
+        git clone https://github.com/erincatto/box2d.git
+        cd box2d
+        mkdir -p build
+        cd build
+        cmake -DBOX2D_BUILD_TESTBED=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF ..
+        make -j4
+        sudo make install
+        cd ../..
+        rm -rf box2d
+        
+        # Create a symlink if needed for backward compatibility
+        if [ ! -d "/usr/local/lib/cmake/Box2D" ] && [ -d "/usr/local/lib/cmake/box2d" ]; then
+            sudo mkdir -p /usr/local/lib/cmake/Box2D
+            sudo ln -sf /usr/local/lib/cmake/box2d/box2dConfig.cmake /usr/local/lib/cmake/Box2D/Box2DConfig.cmake
+        fi
+    else
+        echo "Box2D configuration files found."
+    fi
+    
+    # Update the linker cache to ensure libraries are found
+    sudo ldconfig
+}
+
+# Run the Box2D configuration handler
+handle_box2d_config
+
 # Optional: Install Dear ImGui (commented out by default)
 # echo "Installing Dear ImGui..."
 # git clone https://github.com/ocornut/imgui.git
@@ -76,7 +114,13 @@ fi
 echo "Setting up build environment..."
 mkdir -p build
 cd build
-cmake ..
+# Try with explicit Box2D path if standard methods fail
+cmake -DCMAKE_PREFIX_PATH="/usr/local/lib/cmake/box2d;/usr/local/lib/cmake/Box2D" ..
 
 echo "Dependencies installation complete!"
 echo "You can now build the project using: cd build && make"
+echo ""
+echo "If you still encounter Box2D not found errors, try the following:"
+echo "1. Delete the CMakeCache.txt file: rm build/CMakeCache.txt"
+echo "2. Re-run CMake with explicit Box2D path:"
+echo "   cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/cmake/box2d .."
