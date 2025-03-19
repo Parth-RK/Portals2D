@@ -9,7 +9,7 @@ A 2D physics-based game inspired by the portal mechanics from Valve's Portal gam
 - Momentum conservation through portals
 - Dynamic object creation
 - Toggleable gravity
-- Simple and intuitive controls
+- Object manipulation (dragging, throwing, resizing)
 
 ## Requirements
 - Python 3.8+
@@ -52,14 +52,17 @@ python main.py
 - **G**: Toggle gravity on/off
 - **B**: Create a box at cursor position
 - **C**: Create a circle at cursor position
-- **Left Click**: Place blue portal
-- **Right Click**: Place orange portal
+- **P**: Create portals (press twice to create a pair)
+- **Left Click**: Grab and drag objects
+- **Release Left Click**: Throw the object
+- **Right Click**: Open object properties menu (resize, rotate)
 
 ### Gameplay
-1. Create objects using the B and C keys
-2. Place portals on surfaces using left and right mouse buttons
-3. Objects will teleport between linked portals, conserving momentum
-4. Experiment with different portal placements and gravity settings
+1. Create objects using the B and C keys.
+2. Place portals on surfaces using the P key (press twice for a pair).
+3. Objects will teleport between linked portals, conserving momentum.
+4. Drag objects with the left mouse button and throw them by releasing.
+5. Right-click on objects to resize or rotate them.
 
 ## Project Structure
 ```
@@ -81,24 +84,24 @@ Portals2D/
 
 ### Portal Mechanics
 The game implements true portal mechanics where:
-- Objects maintain momentum when passing through portals
-- The exit velocity is calculated based on the orientation of both portals
-- Objects can partially enter portals, appearing gradually on the other side
+- Objects maintain momentum when passing through portals.
+- The exit velocity is calculated based on the orientation of both portals.
+- Objects can partially enter portals, appearing gradually on the other side.
 
 ### Physics
-- Built on PyBox2D for accurate physics simulation
-- Uses collision detection for portal interactions
-- Implements gravity and other physical forces
+- Built on PyBox2D for accurate physics simulation.
+- Uses collision detection for portal interactions.
+- Implements gravity and other physical forces.
 
 ### Rendering
-- Uses Pygame for efficient 2D rendering
-- Object rotation and portal effects are handled through surface transformations
+- Uses Pygame for efficient 2D rendering.
+- Object rotation and portal effects are handled through surface transformations.
 
 ## Development
 This project is structured with modularity in mind, making it easy to extend with new features:
-- Add new object types in the `game_objects` module
-- Extend physics functionality in the `physics` module
-- Add visual effects in the `rendering` module
+- Add new object types in the `game_objects` module.
+- Extend physics functionality in the `physics` module.
+- Add visual effects in the `rendering` module.
 
 ## License
 [Specify your license here]

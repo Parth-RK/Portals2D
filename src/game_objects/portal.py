@@ -5,7 +5,7 @@ import pygame
 class Portal:
     def __init__(self, portal_id, color, x, y, angle):
         self.id = portal_id
-        self.color = color
+        self.color = color  # Store the color name (e.g., "BLUE")
         self.position = b2Vec2(x, y)
         self.angle = angle
         self.width = 10
@@ -13,7 +13,7 @@ class Portal:
         self.linked_portal = None
         self.sensor = None  # Will be set by physics engine
         
-        # Set color based on portal type
+        # Set display color based on portal type
         self.set_color_by_type(color)
             
         # Object cache for preventing immediate re-entry
@@ -32,7 +32,8 @@ class Portal:
             "CYAN": (0, 255, 255),     # Cyan
             "MAGENTA": (255, 0, 255),  # Magenta
         }
-        self.display_color = color_map.get(color, (128, 128, 128))  # Default gray
+        # Store the RGB color value in self.color for rendering
+        self.color = color_map.get(color, (128, 128, 128))  # Default gray
             
     def link_portal(self, other_portal):
         """Link this portal with another portal."""

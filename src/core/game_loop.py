@@ -31,7 +31,18 @@ class GameLoop:
         
     def process_input(self):
         """Process user input."""
-        commands = self.input_manager.process_events()
+        # Process pygame events once and distribute to both managers
+        events = pygame.event.get()
+        
+        # Handle UI events first (they might consume events)
+        for event in events:
+            if self.ui_manager.handle_mouse_event(event):
+                # Event was consumed by UI, don't process further
+                continue
+                
+        # Process remaining events through input manager
+        commands = self.input_manager.process_events(events)
+        
         for cmd in commands:
             if cmd == "QUIT":
                 self.running = False
@@ -95,7 +106,8 @@ class GameLoop:
         """Render the current game state."""
         self.renderer.clear()
         self.renderer.draw_objects()
-        self.ui_manager.draw()
+        # Pass both object_manager and physics_engine to the UI manager
+        self.ui_manager.draw(self.object_manager, self.physics_engine, self.clock)
         pygame.display.flip()
         
     def run(self):

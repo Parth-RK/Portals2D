@@ -80,14 +80,17 @@ class Renderer:
         
         # Create a surface for the portal
         portal_surface = pygame.Surface((portal.width, portal.height), pygame.SRCALPHA)
+        
+        # Use portal.color (which now contains the RGB tuple)
         pygame.draw.rect(
             portal_surface,
             portal.color,
             (0, 0, portal.width, portal.height)
         )
         
-        # Add a glow effect
-        glow_color = (portal.color[0], portal.color[1], portal.color[2], 128)
+        # Add a glow effect - get color components and ensure alpha component is valid
+        r, g, b = portal.color[0], portal.color[1], portal.color[2]
+        glow_color = (r, g, b, 128)  # Add alpha for glow effect
         glow_rect = pygame.Rect(-5, -5, portal.width + 10, portal.height + 10)
         pygame.draw.rect(portal_surface, glow_color, glow_rect, 5)
         

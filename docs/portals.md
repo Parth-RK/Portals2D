@@ -17,9 +17,11 @@ Portals are a core mechanic of the game, enabling objects to teleport between li
 - Press **P** a third time to start creating a new portal pair with a different color.
 - Portal colors are automatically assigned in sequence (e.g., Blue, Orange, Green, etc.).
 
-### 3. **Teleportation**
-- Objects entering a portal gradually appear on the other side as they pass through.
-- The object's position and velocity are transformed based on the relative orientation of the portals.
+### 3. **Teleportation Mechanics**
+- **Entry Detection:** When an object collides with a portal's sensor, it is considered to have entered the portal.
+- **Exit Calculation:** The object's position and velocity are transformed based on the relative orientation and position of the linked portal.
+- **Momentum Conservation:** The object's velocity is adjusted to preserve momentum during teleportation.
+- **Orientation Adjustment:** The object's rotation is recalculated to match the exit portal's orientation.
 
 ### 4. **Momentum Conservation**
 - Velocity vectors are adjusted to preserve momentum during teleportation.
@@ -47,6 +49,7 @@ Portals are a core mechanic of the game, enabling objects to teleport between li
 - **Collision Detection:** Portals use Box2D sensors to detect objects entering their area.
 - **Position Transformation:** Entry and exit positions are calculated using the portals' relative positions and orientations.
 - **Velocity Transformation:** Velocity vectors are rotated and scaled to match the exit portal's frame of reference.
+- **Cooldown Mechanism:** Objects are temporarily marked as "recently teleported" to prevent immediate re-entry into the same portal.
 
 ## Testing and Validation
 - Extensive testing is performed to ensure smooth transitions at various angles and speeds.

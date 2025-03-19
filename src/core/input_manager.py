@@ -25,7 +25,7 @@ class InputManager:
         
         self.logger.info("Input manager initialized")
         
-    def process_events(self):
+    def process_events(self, events=None):
         """Process all input events and return a list of actions."""
         commands = []
         
@@ -41,7 +41,11 @@ class InputManager:
         self.last_mouse_pos = current_mouse_pos
         self.mouse_pos = current_mouse_pos
         
-        for event in pygame.event.get():
+        # If events weren't provided, get them now
+        if events is None:
+            events = pygame.event.get()
+            
+        for event in events:
             # Handle quit event
             if event.type == pygame.QUIT:
                 commands.append("QUIT")
@@ -66,7 +70,7 @@ class InputManager:
                 elif event.key == pygame.K_p:
                     # Handle portal creation mode
                     color = self.portal_colors[self.current_portal_color_index]
-                    portal_id = f"{color}_{self.portal_pair_count[color] % 2}"
+                    portal_id = f"{self.portal_pair_count[color] % 2}"
                     
                     commands.append(f"CREATE_PORTAL:{color}:{portal_id}:{self.mouse_pos[0]}:{self.mouse_pos[1]}:0")
                     
