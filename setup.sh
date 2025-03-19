@@ -61,11 +61,26 @@ if ! apt-cache search libbox2d-dev | grep -q libbox2d-dev; then
         make -j$(nproc)
         sudo make install
         
+        # Create compatibility symbolic links if needed
+        if [ -d "/usr/local/include/box2d" ] && [ ! -d "/usr/local/include/Box2D" ]; then
+            echo "Creating Box2D compatibility symbolic link..."
+            sudo ln -sf /usr/local/include/box2d /usr/local/include/Box2D
+        fi
+        
         # Return to the project directory
         cd "$OLDPWD"
     fi
 else
     install_package libbox2d-dev
+fi
+
+# Create cmake directory and copy FindBox2D.cmake
+echo "Setting up CMake modules..."
+mkdir -p cmake
+if [ ! -f "cmake/FindBox2D.cmake" ]; then
+    echo "Creating FindBox2D.cmake module..."
+    # The content will be created manually by the user following the instructions
+    echo "Please create the FindBox2D.cmake file in the cmake directory using the provided code."
 fi
 
 # Configure and build the project

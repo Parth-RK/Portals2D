@@ -4,6 +4,9 @@ project(2D_Portals_Game)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Add our custom CMake modules path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+
 # Find SDL2 and required components
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -32,15 +35,8 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Add Box2D
-find_package(Box2D QUIET)
-if(NOT Box2D_FOUND)
-    # Try pkg-config as fallback
-    include(FindPkgConfig)
-    pkg_check_modules(BOX2D REQUIRED box2d)
-    include_directories(${BOX2D_INCLUDE_DIRS})
-else()
-    include_directories(${BOX2D_INCLUDE_DIRS})
-endif()
+find_package(Box2D REQUIRED)
+include_directories(${BOX2D_INCLUDE_DIR})
 
 # Source files
 file(GLOB_RECURSE SOURCES "src/*.cpp")
@@ -49,7 +45,7 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_executable(PortalsGame ${SOURCES})
 
 # Link libraries
-target_link_libraries(PortalsGame ${SDL2_LIBRARIES} ${BOX2D_LIBRARIES})
+target_link_libraries(PortalsGame ${SDL2_LIBRARIES} ${BOX2D_LIBRARY})
 
 # Copy assets to build directory if the directory exists
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
