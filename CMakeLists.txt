@@ -32,8 +32,15 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Add Box2D
-find_package(Box2D REQUIRED)
-include_directories(${BOX2D_INCLUDE_DIRS})
+find_package(Box2D QUIET)
+if(NOT Box2D_FOUND)
+    # Try pkg-config as fallback
+    include(FindPkgConfig)
+    pkg_check_modules(BOX2D REQUIRED box2d)
+    include_directories(${BOX2D_INCLUDE_DIRS})
+else()
+    include_directories(${BOX2D_INCLUDE_DIRS})
+endif()
 
 # Source files
 file(GLOB_RECURSE SOURCES "src/*.cpp")
