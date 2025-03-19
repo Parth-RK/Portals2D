@@ -97,6 +97,68 @@ handle_box2d_config() {
     
     # Update the linker cache to ensure libraries are found
     sudo ldconfig
+    
+    # Create custom FindBox2D.cmake as a fallback solution
+    create_find_box2d_cmake
+}
+
+# Function to create a custom FindBox2D.cmake file
+create_find_box2d_cmake() {
+    echo "Creating custom FindBox2D.cmake file as a fallback solution..."
+    
+    # Create cmake/modules directory if it doesn't exist
+    mkdir -p cmake/modules
+    
+    # Create FindBox2D.cmake file
+    cat > cmake/modules/FindBox2D.cmake << 'EOL'
+# FindBox2D.cmake
+# Custom module to find Box2D library
+# This file helps CMake find Box2D even when standard configuration files are missing
+
+# Variables that will be defined:
+# BOX2D_FOUND        - System has Box2D
+# BOX2D_INCLUDE_DIRS - Box2D include directories
+# BOX2D_LIBRARIES    - Box2D libraries
+
+# Look for Box2D headers in standard locations
+find_path(BOX2D_INCLUDE_DIR 
+    NAMES box2d/box2d.h box2d.h
+    PATHS
+        /usr/include
+        /usr/local/include
+        /opt/local/include
+)
+
+# Look for Box2D library
+find_library(BOX2D_LIBRARY
+    NAMES box2d Box2D
+    PATHS
+        /usr/lib
+        /usr/local/lib
+        /opt/local/lib
+)
+
+# Set BOX2D_FOUND if both include dir and library are found
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Box2D DEFAULT_MSG BOX2D_LIBRARY BOX2D_INCLUDE_DIR)
+
+# Set the output variables
+if(BOX2D_FOUND)
+    set(BOX2D_LIBRARIES ${BOX2D_LIBRARY})
+    set(BOX2D_INCLUDE_DIRS ${BOX2D_INCLUDE_DIR})
+    message(STATUS "Found Box2D: ${BOX2D_LIBRARIES}")
+else()
+    set(BOX2D_LIBRARIES "")
+    set(BOX2D_INCLUDE_DIRS "")
+endif()
+
+# Hide these variables in GUI
+mark_as_advanced(BOX2D_INCLUDE_DIR BOX2D_LIBRARY)
+EOL
+
+    echo "Custom FindBox2D.cmake created in cmake/modules directory"
+    echo "Add the following to your CMakeLists.txt file before find_package(Box2D):"
+    echo "set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} \${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)"
 }
 
 # Run the Box2D configuration handler
@@ -114,13 +176,16 @@ handle_box2d_config
 echo "Setting up build environment..."
 mkdir -p build
 cd build
-# Try with explicit Box2D path if standard methods fail
-cmake -DCMAKE_PREFIX_PATH="/usr/local/lib/cmake/box2d;/usr/local/lib/cmake/Box2D" ..
+# Try with explicit Box2D path and module path if standard methods fail
+cmake -DCMAKE_PREFIX_PATH="/usr/local/lib/cmake/box2d;/usr/local/lib/cmake/Box2D" -DCMAKE_MODULE_PATH="../cmake/modules" ..
 
 echo "Dependencies installation complete!"
 echo "You can now build the project using: cd build && make"
 echo ""
 echo "If you still encounter Box2D not found errors, try the following:"
 echo "1. Delete the CMakeCache.txt file: rm build/CMakeCache.txt"
-echo "2. Re-run CMake with explicit Box2D path:"
-echo "   cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/cmake/box2d .."
+echo "2. Make sure you have the custom FindBox2D.cmake in cmake/modules directory"
+echo "3. Re-run CMake with explicit paths:"
+echo "   cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/cmake/box2d -DCMAKE_MODULE_PATH=../cmake/modules .."
+echo "4. Check if you need to add this line to your CMakeLists.txt:"
+echo "   set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} \${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)"
