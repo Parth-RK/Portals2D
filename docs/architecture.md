@@ -11,64 +11,45 @@ The 2D Portals Game is designed with a modular architecture to ensure maintainab
 - Handles the sequence of input processing, physics updates, game logic, and rendering.
 - Ensures a consistent frame rate by using a fixed time step for updates.
 - **Files:**
-  - `src/core/GameLoop.h`
-  - `src/core/GameLoop.cpp`
+  - `src/core/game_loop.py`
 
 ### 2. **Input Manager**
 - Captures and processes user inputs (keyboard and mouse).
 - Maps inputs to game actions such as adding/deleting objects, resizing, and toggling gravity.
 - **Files:**
-  - `src/core/InputManager.h`
-  - `src/core/InputManager.cpp`
+  - `src/core/input_manager.py`
 
 ### 3. **Object Manager**
 - Maintains a list of all game objects and portals.
 - Handles creation, deletion, and updates of objects.
 - Ensures consistency between the game state and the physics engine.
 - **Files:**
-  - `src/core/ObjectManager.h`
-  - `src/core/ObjectManager.cpp`
+  - `src/core/object_manager.py`
 
 ### 4. **Physics Engine Integration**
-- Uses Box2D for realistic 2D physics simulation.
+- Uses PyBox2D for realistic 2D physics simulation.
 - Manages gravity, collisions, and momentum conservation.
 - Provides a wrapper for applying forces and handling portal interactions.
 - **Files:**
-  - `src/physics/PhysicsEngine.h`
-  - `src/physics/PhysicsEngine.cpp`
-  - `src/physics/PortalPhysics.h`
-  - `src/physics/PortalPhysics.cpp`
-  - `src/physics/CollisionHandler.h`
-  - `src/physics/CollisionHandler.cpp`
+  - `src/physics/physics_engine.py`
 
 ### 5. **Rendering Module**
-- Uses SDL2 for rendering objects, portals, and UI elements.
+- Uses Pygame for rendering objects, portals, and UI elements.
 - Optimized for low-spec hardware by minimizing overdraw and culling off-screen objects.
 - **Files:**
-  - `src/rendering/Renderer.h`
-  - `src/rendering/Renderer.cpp`
-  - `src/rendering/TextureManager.h`
-  - `src/rendering/TextureManager.cpp`
-  - `src/rendering/PortalRenderer.h`
-  - `src/rendering/PortalRenderer.cpp`
+  - `src/rendering/renderer.py`
 
 ### 6. **UI Manager**
 - Handles in-game controls for object manipulation and gravity toggling.
 - Provides a simple and lightweight interface for user interactions.
 - **Files:**
-  - `src/ui/UIManager.h`
-  - `src/ui/UIManager.cpp`
-  - `src/ui/Button.h`
-  - `src/ui/Button.cpp`
-  - `src/ui/Slider.h`
-  - `src/ui/Slider.cpp`
+  - `src/ui/ui_manager.py`
 
 ### 7. **Error and Logging System**
 - Centralized logging for debugging and error tracking.
 - Ensures graceful recovery from runtime errors.
 - **Files:**
-  - `src/utils/Logger.h`
-  - `src/utils/Logger.cpp`
+  - `src/utils/logger.py`
 
 ## Module Interactions
 
