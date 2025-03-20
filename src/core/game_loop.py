@@ -20,8 +20,11 @@ class GameLoop:
         self.input_manager = InputManager()
         self.object_manager = ObjectManager()
         self.physics_engine = PhysicsEngine(self.object_manager)
-        self.renderer = Renderer(self.screen, self.object_manager)
         self.ui_manager = UIManager(self.screen)
+        self.renderer = Renderer(self.screen, self.object_manager)
+        
+        # Set initial background color from theme
+        self.renderer.set_background_color(self.ui_manager.get_background_color())
         
         # Fixed time step for physics (60 updates per second)
         self.fixed_time_step = 1/60
@@ -36,7 +39,12 @@ class GameLoop:
         
         # Handle UI events first (they might consume events)
         for event in events:
-            if self.ui_manager.handle_mouse_event(event):
+            result = self.ui_manager.handle_mouse_event(event)
+            if result:
+                # Check if the result is a command string
+                if isinstance(result, str) and result == "THEME_CHANGED":
+                    # Update renderer background when theme changes
+                    self.renderer.set_background_color(self.ui_manager.get_background_color())
                 # Event was consumed by UI, don't process further
                 continue
                 
@@ -48,6 +56,10 @@ class GameLoop:
                 self.running = False
             elif cmd == "TOGGLE_GRAVITY":
                 self.physics_engine.toggle_gravity()
+            elif cmd == "TOGGLE_THEME":
+                # Toggle theme and update renderer background
+                self.ui_manager.toggle_theme()
+                self.renderer.set_background_color(self.ui_manager.get_background_color())
             elif cmd.startswith("CREATE_OBJECT"):
                 obj_type, pos_x, pos_y = cmd.split(":")[1:]
                 self.object_manager.create_object(obj_type, float(pos_x), float(pos_y))

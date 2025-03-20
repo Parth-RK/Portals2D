@@ -84,6 +84,8 @@ class InputManager:
                         self.current_portal_color_index = (self.current_portal_color_index + 1) % len(self.portal_colors)
                     
                     self.logger.info(f"Created portal {portal_id} of color {color}")
+                elif event.key == pygame.K_t:
+                    commands.append("TOGGLE_THEME")
                     
             # Handle mouse clicks
             elif event.type == pygame.MOUSEBUTTONDOWN:

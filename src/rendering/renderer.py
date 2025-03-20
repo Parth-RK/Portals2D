@@ -8,8 +8,12 @@ class Renderer:
         self.screen = screen
         self.object_manager = object_manager
         self.width, self.height = screen.get_size()
-        self.background_color = (50, 50, 50)  # Dark gray
+        self.background_color = (255, 255, 250)  # Default background color
         self.logger.info("Renderer initialized")
+        
+    def set_background_color(self, color):
+        """Set the background color."""
+        self.background_color = color
         
     def clear(self):
         """Clear the screen."""
