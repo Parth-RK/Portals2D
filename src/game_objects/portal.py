@@ -20,9 +20,18 @@ class Portal:
         self.base_color = self.color
             
         # Object cache for preventing immediate re-entry
-        self.recently_teleported = set()
-        self.teleport_cooldown = 0.5  # seconds
-        self.cooldown_timers = {}
+        # Track by color instead of just portal instance
+        self.recently_teleported_by_color = {}  # Dict of {color: set(object_ids)}
+        self.teleport_cooldown = 5.0  # seconds (increased for more noticeable effect)
+        self.cooldown_timers = {}  # Dict of {color: {obj_id: timer}}
+        
+        # Initialize the color cooldown tracking
+        if not hasattr(Portal, 'color_cooldowns'):
+            Portal.color_cooldowns = {}
+            
+        # Ensure this portal's color is in the class-level tracking
+        if self.color_name not in Portal.color_cooldowns:
+            Portal.color_cooldowns[self.color_name] = {'objects': set(), 'timers': {}}
     
     def set_color_by_type(self, color):
         """Set the display color based on portal color name."""
@@ -73,9 +82,13 @@ class Portal:
             
     def check_collision(self, game_object):
         """Check if an object is colliding with this portal."""
-        if not self.sensor or not game_object.body or game_object.id in self.recently_teleported:
+        if not self.sensor or not game_object.body:
             return False
             
+        # Check if the object is in cooldown for this portal's color
+        if game_object.id in Portal.color_cooldowns.get(self.color_name, {}).get('objects', set()):
+            return False
+                
         # Check for collision between object and portal sensor
         for contact_edge in game_object.body.contacts:
             contact = contact_edge.contact
@@ -86,7 +99,11 @@ class Portal:
         
     def teleport_object(self, game_object):
         """Teleport an object to the linked portal's position."""
-        if not self.is_linked() or game_object.id in self.recently_teleported:
+        if not self.is_linked():
+            return False
+            
+        # Check if the object is in cooldown for this portal's color
+        if game_object.id in Portal.color_cooldowns.get(self.color_name, {}).get('objects', set()):
             return False
             
         # Calculate position offset relative to this portal
@@ -124,26 +141,32 @@ class Portal:
         new_angle = game_object.angle + angle_diff
         game_object.set_angle(new_angle)
         
-        # Add to recently teleported list to prevent immediate re-entry
-        self.recently_teleported.add(game_object.id)
-        self.cooldown_timers[game_object.id] = self.teleport_cooldown
+        # Add to color-based cooldown tracking
+        if self.color_name not in Portal.color_cooldowns:
+            Portal.color_cooldowns[self.color_name] = {'objects': set(), 'timers': {}}
+            
+        Portal.color_cooldowns[self.color_name]['objects'].add(game_object.id)
+        Portal.color_cooldowns[self.color_name]['timers'][game_object.id] = self.teleport_cooldown
         
         return True
         
     def update(self, dt):
         """Update portal state."""
-        # Update cooldown timers
-        keys_to_remove = []
-        for obj_id, timer in list(self.cooldown_timers.items()):
-            self.cooldown_timers[obj_id] -= dt
-            if self.cooldown_timers[obj_id] <= 0:
-                keys_to_remove.append(obj_id)
-                
-        # Remove expired cooldowns
-        for obj_id in keys_to_remove:
-            if obj_id in self.recently_teleported:
-                self.recently_teleported.remove(obj_id)
-            del self.cooldown_timers[obj_id]
+        # Update color-based cooldown timers
+        for color, cooldown_data in Portal.color_cooldowns.items():
+            objects_to_remove = []
+            
+            # Update all timers for this color
+            for obj_id, timer in list(cooldown_data['timers'].items()):
+                cooldown_data['timers'][obj_id] -= dt
+                if cooldown_data['timers'][obj_id] <= 0:
+                    objects_to_remove.append(obj_id)
+            
+            # Remove expired cooldowns
+            for obj_id in objects_to_remove:
+                cooldown_data['objects'].discard(obj_id)
+                if obj_id in cooldown_data['timers']:
+                    del cooldown_data['timers'][obj_id]
             
     def resize(self, scale):
         """Resize the portal."""
