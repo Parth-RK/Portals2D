@@ -5,7 +5,7 @@ import pygame
 class Portal:
     def __init__(self, portal_id, color, x, y, angle):
         self.id = portal_id
-        self.color = color  # Store the color name (e.g., "BLUE")
+        self.color_name = color  # Store the color name (e.g., "BLUE")
         self.position = b2Vec2(x, y)
         self.angle = angle
         self.width = 10
@@ -15,6 +15,9 @@ class Portal:
         
         # Set display color based on portal type
         self.set_color_by_type(color)
+        
+        # Store base color for theme adjustments
+        self.base_color = self.color
             
         # Object cache for preventing immediate re-entry
         self.recently_teleported = set()
@@ -34,8 +37,15 @@ class Portal:
         }
         # Store the RGB color value in self.color for rendering
         self.color = color_map.get(color, (128, 128, 128))  # Default gray
-        # Store the color name for reference
-        self.color_name = color
+        # Also store the base color for theme adjustments
+        self.base_color = self.color
+        
+    def apply_tint(self, tint_factor):
+        """Apply a tint factor to adjust portal color based on theme."""
+        r = min(255, int(self.base_color[0] * tint_factor))
+        g = min(255, int(self.base_color[1] * tint_factor))
+        b = min(255, int(self.base_color[2] * tint_factor))
+        self.color = (r, g, b)
             
     def link_portal(self, other_portal):
         """Link this portal with another portal."""

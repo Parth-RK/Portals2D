@@ -12,14 +12,22 @@ class ObjectManager:
         self.portal_pairs = {}
         self.logger.info("Object manager initialized")
         
-    def create_object(self, obj_type, x, y):
+    def create_object(self, obj_type, x, y, ui_manager=None):
         """Create a new game object of specified type."""
         new_obj = GameObject(obj_type, x, y)
+        
+        # Set object color based on current theme if UI manager is provided
+        if ui_manager:
+            if obj_type == "BOX":
+                new_obj.color = ui_manager.get_box_color()
+            elif obj_type == "CIRCLE":
+                new_obj.color = ui_manager.get_circle_color()
+        
         self.objects.append(new_obj)
         self.logger.info(f"Created {obj_type} object at ({x}, {y})")
         return new_obj
         
-    def create_portal(self, color, portal_id, x, y, angle):
+    def create_portal(self, color, portal_id, x, y, angle, ui_manager=None):
         """Create a portal with the specified color and ID or update an existing one."""
         full_id = f"{color}_{portal_id}"
         
@@ -31,6 +39,10 @@ class ObjectManager:
         else:
             # Create new portal
             new_portal = Portal(full_id, color, x, y, angle)
+            # Apply theme tint if UI manager is provided
+            if ui_manager:
+                new_portal.apply_tint(ui_manager.get_portal_tint())
+                
             self.portals[full_id] = new_portal
             
             # Set up portal pairs
@@ -197,6 +209,22 @@ class ObjectManager:
                 return True
                 
         return False
+        
+    def update_object_colors(self, ui_manager):
+        """Update colors of all objects based on the current theme."""
+        # Update regular objects
+        for obj in self.objects:
+            if obj.obj_type == "BOX":
+                obj.color = ui_manager.get_box_color()
+            elif obj.obj_type == "CIRCLE":
+                obj.color = ui_manager.get_circle_color()
+                
+        # Update portal colors
+        portal_tint = ui_manager.get_portal_tint()
+        for portal in self.portals.values():
+            portal.apply_tint(portal_tint)
+            
+        self.logger.info("Updated object colors for theme change")
         
     def update(self, dt):
         """Update all managed objects."""

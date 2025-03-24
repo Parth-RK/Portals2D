@@ -7,45 +7,31 @@ The physics system is built on Box2D to provide realistic 2D physics simulation.
 ## Key Features
 
 ### 1. **Gravity**
-- A global gravity vector affects all dynamic objects.
+- Affects all dynamic objects globally.
 - Can be toggled on or off via user input.
-- Smoothly adapts ongoing simulations to changes in gravity.
 
 ### 2. **Collisions**
-- Uses Box2D's collision detection and response mechanisms.
 - Handles object-to-object and object-to-portal interactions.
-- Ensures stability and realism during high-speed interactions.
+- Ensures stability during high-speed interactions.
 
-### 3. **Momentum Conservation**
-- Objects retain their momentum when passing through portals.
-- Velocity vectors are transformed based on the orientation of the entry and exit portals.
-
-### 4. **Portal Transitions**
+### 3. **Portal Transitions**
 - Objects entering a portal are teleported to the linked portal's exit.
 - Position and velocity are recalculated to ensure seamless transitions.
-- Handles edge cases such as partial overlaps and blocked exits.
 
-### 5. **Object Manipulation**
-- Clicking on an object allows the user to hold and drag it around.
-- Releasing the mouse while dragging throws the object with momentum.
-- Right-clicking on an object opens a context menu to modify its size and orientation.
+### 4. **Object Manipulation**
+- Users can drag and throw objects with momentum.
+- Right-clicking opens a context menu for resizing and rotating objects.
 
 ## Implementation Details
 
 ### Fixed Time Step
-- Physics updates use a fixed time step to ensure determinism and stability.
-- Prevents inconsistencies caused by variable frame rates.
+- Ensures determinism and stability in physics updates.
 
 ### Object Management
 - Dynamic objects and portals are represented as Box2D bodies.
-- Changes to object properties (e.g., size, position) are reflected in the physics engine.
 
-### Edge Case Handling
-- **Overlapping Portals:** Prevent placement or resolve overlaps by snapping portals apart.
-- **Blocked Exits:** Delay teleportation or adjust object positions to avoid collisions.
-- **High Object Density:** Limit the number of active objects to maintain performance.
+### Optimization
+- Spatial partitioning for efficient collision detection.
+- Object pools reduce memory allocation overhead.
 
-## Optimization
-- Spatial partitioning (e.g., quad-trees) for efficient collision detection.
-- Preallocated object pools to reduce memory allocation overhead.
-- Simplified physics calculations for non-critical objects.
+---

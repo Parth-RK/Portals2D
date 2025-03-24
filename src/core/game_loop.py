@@ -45,6 +45,8 @@ class GameLoop:
                 if isinstance(result, str) and result == "THEME_CHANGED":
                     # Update renderer background when theme changes
                     self.renderer.set_background_color(self.ui_manager.get_background_color())
+                    # Update object colors for the new theme
+                    self.object_manager.update_object_colors(self.ui_manager)
                 # Event was consumed by UI, don't process further
                 continue
                 
@@ -60,13 +62,15 @@ class GameLoop:
                 # Toggle theme and update renderer background
                 self.ui_manager.toggle_theme()
                 self.renderer.set_background_color(self.ui_manager.get_background_color())
+                # Update object colors for the new theme
+                self.object_manager.update_object_colors(self.ui_manager)
             elif cmd.startswith("CREATE_OBJECT"):
                 obj_type, pos_x, pos_y = cmd.split(":")[1:]
-                self.object_manager.create_object(obj_type, float(pos_x), float(pos_y))
+                self.object_manager.create_object(obj_type, float(pos_x), float(pos_y), self.ui_manager)
             elif cmd.startswith("CREATE_PORTAL"):
                 color, portal_id, pos_x, pos_y, angle = cmd.split(":")[1:]
                 self.object_manager.create_portal(
-                    color, portal_id, float(pos_x), float(pos_y), float(angle))
+                    color, portal_id, float(pos_x), float(pos_y), float(angle), self.ui_manager)
             elif cmd.startswith("TRY_GRAB_OBJECT"):
                 pos_x, pos_y = cmd.split(":")[1:]
                 obj = self.object_manager.get_object_at_position(float(pos_x), float(pos_y))

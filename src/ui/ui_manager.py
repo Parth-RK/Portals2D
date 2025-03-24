@@ -22,7 +22,11 @@ class UIManager:
                 "ui_border_color": (100, 100, 130),
                 "menu_icon_color": (200, 200, 210),
                 "menu_text_color": (230, 230, 230),
-                "accent_color": (100, 140, 230)
+                "accent_color": (100, 140, 230),
+                # Game object colors for dark theme
+                "box_color": (200, 200, 220),      # Light gray with blue tint
+                "circle_color": (255, 220, 60),    # Bright yellow
+                "portal_tint": 1.2                 # Brighten portals slightly
             },
             "light": {
                 "bg_color": (245, 245, 248),
@@ -32,7 +36,11 @@ class UIManager:
                 "ui_border_color": (180, 180, 190),
                 "menu_icon_color": (80, 80, 90),
                 "menu_text_color": (40, 40, 45),
-                "accent_color": (70, 110, 200)
+                "accent_color": (70, 110, 200),
+                # Game object colors for light theme
+                "box_color": (80, 90, 120),        # Darker blue-gray
+                "circle_color": (220, 160, 20),    # Darker yellow
+                "portal_tint": 0.9                 # Slightly darken portals
             },
             "dusk": {
                 "bg_color": (50, 55, 80),
@@ -42,7 +50,11 @@ class UIManager:
                 "ui_border_color": (120, 125, 180),
                 "menu_icon_color": (200, 205, 255),
                 "menu_text_color": (220, 225, 255),
-                "accent_color": (130, 160, 255)
+                "accent_color": (130, 160, 255),
+                # Game object colors for dusk theme
+                "box_color": (180, 190, 255),      # Light blue with purple tint
+                "circle_color": (255, 190, 80),    # Soft orange
+                "portal_tint": 1.1                 # Slightly brighten portals
             },
             "cream": {
                 "bg_color": (250, 245, 230),
@@ -52,7 +64,11 @@ class UIManager:
                 "ui_border_color": (200, 190, 165),
                 "menu_icon_color": (120, 110, 90),
                 "menu_text_color": (60, 50, 40),
-                "accent_color": (180, 130, 90)
+                "accent_color": (180, 130, 90),
+                # Game object colors for cream theme
+                "box_color": (120, 90, 60),        # Brown
+                "circle_color": (180, 120, 10),    # Dark orange-brown
+                "portal_tint": 0.85                # Darken portals for contrast
             }
         }
         
@@ -371,7 +387,7 @@ class UIManager:
                         self.current_theme = option
                         self.logger.info(f"Changed theme to {option}")
                         self.show_theme_selector = False
-                        # Return a command to update the renderer background
+                        # Return a command to update the renderer and objects
                         if old_theme != option:
                             return "THEME_CHANGED"
                         return True
@@ -519,6 +535,18 @@ class UIManager:
         """Get the current theme's background color."""
         return self.themes[self.current_theme]["bg_color"]
     
+    def get_box_color(self):
+        """Get the current theme's box color."""
+        return self.themes[self.current_theme]["box_color"]
+        
+    def get_circle_color(self):
+        """Get the current theme's circle color."""
+        return self.themes[self.current_theme]["circle_color"]
+        
+    def get_portal_tint(self):
+        """Get the current theme's portal tint factor."""
+        return self.themes[self.current_theme]["portal_tint"]
+        
     def toggle_theme(self):
         """Cycle to the next theme."""
         theme_options = list(self.themes.keys())
