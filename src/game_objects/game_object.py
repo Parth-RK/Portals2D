@@ -16,6 +16,14 @@ class GameObject:
         self.body = None  # Will be set by physics engine
         self.fixture = None  # Will be set by physics engine
         
+        # Animation properties
+        self.is_teleporting = False
+        self.teleport_progress = 0.0
+        self.teleport_duration = 0.3  # seconds
+        self.teleport_start_scale = 1.0
+        self.teleport_end_scale = 0.1  # Shrink to 10% when disappearing
+        self.current_scale = 1.0
+        
         # Set size based on type
         if obj_type == "BOX":
             self.width = 32
@@ -24,6 +32,9 @@ class GameObject:
         elif obj_type == "CIRCLE":
             self.radius = 16
             self.color = (255, 255, 0)  # Yellow
+        elif obj_type == "TRIANGLE":
+            self.side_length = 32  # Size of equilateral triangle
+            self.color = (0, 200, 200)  # Cyan
         else:
             self.width = 16
             self.height = 16
@@ -37,6 +48,30 @@ class GameObject:
             self.angle = self.body.angle
             self.velocity = self.body.linearVelocity
             self.angular_velocity = self.body.angularVelocity
+            
+        # Update teleport animation if active
+        if self.is_teleporting:
+            self.teleport_progress += dt / self.teleport_duration
+            if self.teleport_progress >= 1.0:
+                self.is_teleporting = False
+                self.teleport_progress = 0.0
+                self.current_scale = 1.0
+            else:
+                # Calculate current scale based on animation progress
+                self.current_scale = self.teleport_start_scale + (self.teleport_end_scale - self.teleport_start_scale) * self.teleport_progress
+            
+    def start_teleport_animation(self, entering=True):
+        """Start teleport animation."""
+        self.is_teleporting = True
+        self.teleport_progress = 0.0
+        if entering:
+            # Entering animation (shrinking)
+            self.teleport_start_scale = 1.0
+            self.teleport_end_scale = 0.1
+        else:
+            # Exiting animation (growing)
+            self.teleport_start_scale = 0.1
+            self.teleport_end_scale = 1.0
             
     def set_position(self, x, y):
         """Set the object's position."""
@@ -75,6 +110,15 @@ class GameObject:
                 self.radius * 2,
                 self.radius * 2
             )
+        elif self.obj_type == "TRIANGLE":
+            # Approximating the triangle with a rectangle
+            height = self.side_length * 0.866  # sqrt(3)/2
+            return pygame.Rect(
+                self.position.x - self.side_length / 2,
+                self.position.y - height / 2,
+                self.side_length,
+                height
+            )
         else:
             return pygame.Rect(
                 self.position.x - self.width / 2,
@@ -85,9 +129,16 @@ class GameObject:
             
     def should_remove(self):
         """Check if the object should be removed."""
-        # Check if object is out of bounds
-        if self.position.x < -100 or self.position.x > 1380:
-            return True
-        if self.position.y < -100 or self.position.y > 820:
-            return True
+        # For triangles, use side_length to determine if they're out of bounds
+        if self.obj_type == "TRIANGLE":
+            if self.position.x < -100 or self.position.x > 1380:
+                return True
+            if self.position.y < -100 or self.position.y > 820:
+                return True
+        else:
+            # For other objects
+            if self.position.x < -100 or self.position.x > 1380:
+                return True
+            if self.position.y < -100 or self.position.y > 820:
+                return True
         return False

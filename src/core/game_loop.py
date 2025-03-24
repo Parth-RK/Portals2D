@@ -109,6 +109,18 @@ class GameLoop:
                     elif action.startswith("ROTATE"):
                         _, obj_id, angle = action.split(":")
                         self.object_manager.rotate_object(obj_id, float(angle))
+                    elif action.startswith("RESIZE_AND_ROTATE"):
+                        _, obj_id, size, angle = action.split(":")
+                        # Make sure to convert both values to float
+                        self.object_manager.resize_and_rotate(obj_id, float(size), float(angle))
+                        # Make sure changes stay applied by updating the original values in UI manager
+                        self.ui_manager.update_object_original_values(obj_id, float(size), float(angle))
+                    elif action.startswith("DELETE"):
+                        _, obj_id = action.split(":")
+                        self.object_manager.delete_object(obj_id)
+                        # Close context menu after deletion
+                        self.ui_manager.close_context_menu()
+                        self.input_manager.set_context_menu_open(False)
             elif cmd == "CLOSE_CONTEXT_MENU":
                 self.ui_manager.close_context_menu()
                 self.input_manager.set_context_menu_open(False)

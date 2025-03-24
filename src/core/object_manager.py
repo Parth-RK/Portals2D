@@ -22,6 +22,13 @@ class ObjectManager:
                 new_obj.color = ui_manager.get_box_color()
             elif obj_type == "CIRCLE":
                 new_obj.color = ui_manager.get_circle_color()
+            elif obj_type == "TRIANGLE":
+                # Use a dedicated color for triangles or derive from theme
+                if hasattr(ui_manager, 'get_triangle_color'):
+                    new_obj.color = ui_manager.get_triangle_color()
+                else:
+                    # Use a default cyan color
+                    new_obj.color = (0, 200, 200)
         
         self.objects.append(new_obj)
         self.logger.info(f"Created {obj_type} object at ({x}, {y})")
@@ -109,6 +116,24 @@ class ObjectManager:
                 dy = obj.position.y - y
                 if (dx * dx + dy * dy) <= (obj.radius * obj.radius):
                     return obj
+            elif obj.obj_type == "TRIANGLE":
+                # Check if position is within triangle bounds
+                # We'll use a simpler rectangular approximation for click detection
+                height = obj.side_length * 0.866  # sqrt(3)/2
+                
+                # Transform point to object's local space
+                dx = x - obj.position.x
+                dy = y - obj.position.y
+                
+                # Rotate point
+                cos_angle = math.cos(-obj.angle)
+                sin_angle = math.sin(-obj.angle)
+                rx = dx * cos_angle - dy * sin_angle
+                ry = dx * sin_angle + dy * cos_angle
+                
+                # Check if point is inside the approximate rectangle
+                if (abs(rx) <= obj.side_length / 2) and (abs(ry) <= height / 2):
+                    return obj
             else:
                 # Check if position is within rotated box
                 # Transform point to object's local space
@@ -173,10 +198,12 @@ class ObjectManager:
         for obj in self.objects:
             if obj.id == obj_id:
                 if obj.obj_type == "CIRCLE":
-                    obj.radius *= scale
+                    obj.radius = scale
+                elif obj.obj_type == "TRIANGLE":
+                    obj.side_length = scale
                 else:
-                    obj.width *= scale
-                    obj.height *= scale
+                    obj.width = scale
+                    obj.height = scale
                 # Recreate physics body after resize
                 if obj.body:
                     obj.body.userData = {"needs_rebuild": True}
@@ -185,11 +212,49 @@ class ObjectManager:
         # Try portals
         for portal in self.portals.values():
             if portal.id == obj_id:
-                portal.resize(scale)
+                portal.width = scale * 0.2  # Keep width/height ratio
+                portal.height = scale
+                # Recreate the sensor in physics engine
+                if portal.sensor:
+                    portal.sensor.userData = {"needs_rebuild": True}
                 return True
                 
         return False
     
+    def resize_and_rotate(self, obj_id, size, angle_degrees):
+        """Resize and rotate an object with the specified values."""
+        # First resize
+        self.resize_object(obj_id, size)
+        
+        # Then set angle (not rotate, which would add to current)
+        for obj in self.objects:
+            if obj.id == obj_id:
+                obj.set_angle(math.radians(angle_degrees))
+                return True
+                
+        # Try portals
+        for portal in self.portals.values():
+            if portal.id == obj_id:
+                portal.set_angle(math.radians(angle_degrees))
+                return True
+                
+        return False
+    
+    def delete_object(self, obj_id):
+        """Delete an object by ID."""
+        # Try regular objects
+        for obj in self.objects[:]:
+            if obj.id == obj_id:
+                self.remove_object(obj)
+                return True
+                
+        # Try portals
+        if obj_id in self.portals:
+            self.remove_portal(obj_id)
+            return True
+            
+        return False
+        
     def rotate_object(self, obj_id, angle_degrees):
         """Rotate an object to the specified angle in degrees."""
         # Try regular objects
@@ -218,6 +283,8 @@ class ObjectManager:
                 obj.color = ui_manager.get_box_color()
             elif obj.obj_type == "CIRCLE":
                 obj.color = ui_manager.get_circle_color()
+            elif obj.obj_type == "TRIANGLE":
+                obj.color = ui_manager.get_triangle_color()
                 
         # Update portal colors
         portal_tint = ui_manager.get_portal_tint()

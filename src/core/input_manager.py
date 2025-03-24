@@ -67,6 +67,12 @@ class InputManager:
                 elif event.key == pygame.K_c:
                     # Create a circle at mouse position
                     commands.append(f"CREATE_OBJECT:CIRCLE:{self.mouse_pos[0]}:{self.mouse_pos[1]}")
+                elif event.key == pygame.K_t:
+                    # Swap T and Shift+T - T now creates triangle, Shift+T changes theme
+                    if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                        commands.append("TOGGLE_THEME")
+                    else:
+                        commands.append(f"CREATE_OBJECT:TRIANGLE:{self.mouse_pos[0]}:{self.mouse_pos[1]}")
                 elif event.key == pygame.K_p:
                     # Handle portal creation mode
                     color = self.portal_colors[self.current_portal_color_index]
@@ -84,8 +90,6 @@ class InputManager:
                         self.current_portal_color_index = (self.current_portal_color_index + 1) % len(self.portal_colors)
                     
                     self.logger.info(f"Created portal {portal_id} of color {color}")
-                elif event.key == pygame.K_t:
-                    commands.append("TOGGLE_THEME")
                     
             # Handle mouse clicks
             elif event.type == pygame.MOUSEBUTTONDOWN:

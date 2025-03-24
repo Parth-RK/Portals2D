@@ -22,7 +22,7 @@ class Portal:
         # Object cache for preventing immediate re-entry
         # Track by color instead of just portal instance
         self.recently_teleported_by_color = {}  # Dict of {color: set(object_ids)}
-        self.teleport_cooldown = 5.0  # seconds (increased for more noticeable effect)
+        self.teleport_cooldown = 10.0  # seconds (increased for more noticeable effect)
         self.cooldown_timers = {}  # Dict of {color: {obj_id: timer}}
         
         # Initialize the color cooldown tracking
@@ -105,6 +105,10 @@ class Portal:
         # Check if the object is in cooldown for this portal's color
         if game_object.id in Portal.color_cooldowns.get(self.color_name, {}).get('objects', set()):
             return False
+        
+        # Start the disappearing animation
+        if hasattr(game_object, 'start_teleport_animation'):
+            game_object.start_teleport_animation(entering=True)
             
         # Calculate position offset relative to this portal
         local_pos = game_object.position - self.position
@@ -140,6 +144,10 @@ class Portal:
         # Set new angle
         new_angle = game_object.angle + angle_diff
         game_object.set_angle(new_angle)
+        
+        # Start the reappearing animation
+        if hasattr(game_object, 'start_teleport_animation'):
+            game_object.start_teleport_animation(entering=False)
         
         # Add to color-based cooldown tracking
         if self.color_name not in Portal.color_cooldowns:

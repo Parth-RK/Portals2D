@@ -18,11 +18,19 @@ Portals enable objects to teleport between linked locations while conserving mom
 ### 3. **Teleportation Mechanics**
 - **Entry Detection:** Objects entering a portal's sensor are teleported.
 - **Exit Calculation:** Position and velocity are transformed based on the linked portal's orientation.
-- **Cooldown Mechanism:** Prevents immediate re-entry into the same portal.
+- **Directional Indicators:** Arrows on portals show the exit direction.
+- **Animations:**
+  - Objects shrink and fade out when entering a portal.
+  - Objects grow and fade in when exiting a portal.
 
 ### 4. **Placement Rules**
 - Portals can only be placed on valid surfaces (walls, floors, ceilings).
 - Overlapping portals are disallowed or adjusted automatically.
+
+### 5. **Adjustments**
+- **Size and Rotation:**
+  - Use sliders to adjust portal size (scale from 0.5x to 2.0x).
+  - Use sliders to rotate portals (0° to 360°).
 
 ## Advanced Features
 
@@ -41,5 +49,7 @@ Portals enable objects to teleport between linked locations while conserving mom
 | Portal Entry & Exit  | Box2D sensors detect intersections, apply transformations |
 | Physics Preservation | Velocity and rotation adjustments ensure realism   |
 | Placement Rules      | Constraints prevent invalid or overlapping portals |
+| Directional Indicators | Arrows show exit direction for better clarity    |
+| Animations           | Smooth shrinking, fading, and particle effects     |
 
 ---

@@ -51,6 +51,16 @@ class PhysicsEngine:
         if game_object.obj_type == "CIRCLE":
             shape = b2CircleShape(radius=game_object.radius)
             fixture = body.CreateFixture(shape=shape, density=1.0, friction=0.3)
+        elif game_object.obj_type == "TRIANGLE":
+            # Create a triangular shape using polygon
+            height = game_object.side_length * 0.866  # sqrt(3)/2
+            vertices = [
+                (0, -height/2),  # top
+                (-game_object.side_length/2, height/2),  # bottom left
+                (game_object.side_length/2, height/2)  # bottom right
+            ]
+            shape = b2PolygonShape(vertices=vertices)
+            fixture = body.CreateFixture(shape=shape, density=1.0, friction=0.3)
         else:  # BOX or default
             shape = b2PolygonShape()
             shape.SetAsBox(game_object.width / 2, game_object.height / 2)
@@ -95,6 +105,12 @@ class PhysicsEngine:
         self.gravity_on = not self.gravity_on
         if self.gravity_on:
             self.world.gravity = b2Vec2(0, 10)
+            
+            # Wake up all sleeping bodies when gravity is re-enabled
+            for obj in self.object_manager.get_objects():
+                if obj.body and obj.body.type == b2_dynamicBody:
+                    obj.body.awake = True
+                    
             self.logger.info("Gravity turned ON")
         else:
             self.world.gravity = b2Vec2(0, 0)
@@ -128,6 +144,13 @@ class PhysicsEngine:
         for portal in self.object_manager.get_portals():
             if not portal.sensor or (hasattr(portal.sensor, 'userData') and isinstance(portal.sensor.userData, dict) and portal.sensor.userData.get('needs_rebuild', False)):
                 self.create_portal_sensor(portal)
+        
+        # Wake up objects when they're interacted with
+        if self.gravity_on:
+            for obj in self.object_manager.get_objects():
+                if obj.body and obj.body.type == b2_dynamicBody and obj.body.linearVelocity.lengthSquared < 0.01:
+                    # If object is nearly stationary, ensure it's awake to respond to gravity
+                    obj.body.awake = True
                 
         # Step the physics simulation
         self.world.Step(dt, 8, 3)
