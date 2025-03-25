@@ -12,50 +12,45 @@ class Slider:
         self.label = label
         self.dragging = False
         self.update_handle_position()
-        self.last_value = initial_val  # Store last value to detect changes
-        self.preview_callback = None  # Callback function for preview updates
+        self.last_value = initial_val  # Store for change detection
+        self.preview_callback = None
         
     def update_handle_position(self):
-        """Update the handle position based on the current value."""
         normalized = (self.value - self.min_val) / (self.max_val - self.min_val)
         handle_x = self.rect.x + int(normalized * (self.rect.width - self.handle_width))
         self.handle_rect = pygame.Rect(handle_x, self.rect.y, self.handle_width, self.rect.height)
         
     def draw(self, surface, theme):
-        """Draw the slider."""
-        # Draw background track
+        # Background track
         pygame.draw.rect(surface, theme["ui_border_color"], self.rect, border_radius=3)
         
-        # Draw filled portion
+        # Filled portion
         fill_width = self.handle_rect.x - self.rect.x
         fill_rect = pygame.Rect(self.rect.x, self.rect.y, fill_width, self.rect.height)
         pygame.draw.rect(surface, theme["accent_color"], fill_rect, border_radius=3)
         
-        # Draw handle
+        # Handle
         pygame.draw.rect(surface, theme["ui_highlight_color"], self.handle_rect, border_radius=2)
         pygame.draw.rect(surface, theme["ui_border_color"], self.handle_rect, 1, border_radius=2)
         
-        # Draw label and value with better positioning
+        # Label and value
         font = pygame.font.SysFont('Arial', 16)
-        # Display one decimal place for readability
         if self.label == "Angle":
             label_text = font.render(f"{self.label}: {int(self.value)}°", True, theme["text_color"])
         else:
             label_text = font.render(f"{self.label}: {self.value:.1f}", True, theme["text_color"])
-        # Position label above the slider instead of potentially overlapping
         label_rect = label_text.get_rect(bottomleft=(self.rect.x, self.rect.y - 5))
         surface.blit(label_text, label_rect)
         
     def handle_event(self, event):
-        """Handle mouse events for the slider."""
-        old_value = self.value  # Store current value to detect changes
+        old_value = self.value
         
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.handle_rect.collidepoint(event.pos):
                 self.dragging = True
                 return True
             elif self.rect.collidepoint(event.pos):
-                # Allow clicking anywhere on the slider to move the handle
+                # Click anywhere on slider
                 normalized = (event.pos[0] - self.rect.x) / (self.rect.width - self.handle_width)
                 self.value = self.min_val + normalized * (self.max_val - self.min_val)
                 self.update_handle_position()
@@ -64,12 +59,10 @@ class Slider:
         elif event.type == pygame.MOUSEBUTTONUP:
             self.dragging = False
         elif event.type == pygame.MOUSEMOTION and self.dragging:
-            # Update value based on mouse position
             normalized = max(0, min(1, (event.pos[0] - self.rect.x) / (self.rect.width - self.handle_width)))
             self.value = self.min_val + normalized * (self.max_val - self.min_val)
             self.update_handle_position()
             
-            # Call the preview callback if value changed and callback exists
             if self.preview_callback and self.value != old_value:
                 self.preview_callback(self.value)
                 
@@ -77,11 +70,9 @@ class Slider:
         return False
         
     def get_value(self):
-        """Get the current value of the slider."""
         return self.value
 
     def set_preview_callback(self, callback):
-        """Set a callback function that will be called when slider value changes."""
         self.preview_callback = callback
 
 class UIManager:
@@ -95,7 +86,7 @@ class UIManager:
         self.font = pygame.font.SysFont('Arial', 20)
         self.title_font = pygame.font.SysFont('Arial', 22, bold=True)
         
-        # Define themes with improved colors
+        # Define themes
         self.themes = {
             "dark": {
                 "bg_color": (30, 30, 35),
@@ -106,7 +97,6 @@ class UIManager:
                 "menu_icon_color": (200, 200, 210),
                 "menu_text_color": (230, 230, 230),
                 "accent_color": (100, 140, 230),
-                # Game object colors for dark theme
                 "box_color": (200, 200, 220),      # Light gray with blue tint
                 "circle_color": (255, 220, 60),    # Bright yellow
                 "triangle_color": (0, 200, 200),   # Cyan
@@ -121,7 +111,6 @@ class UIManager:
                 "menu_icon_color": (80, 80, 90),
                 "menu_text_color": (40, 40, 45),
                 "accent_color": (70, 110, 200),
-                # Game object colors for light theme
                 "box_color": (80, 90, 120),        # Darker blue-gray
                 "circle_color": (220, 160, 20),    # Darker yellow
                 "triangle_color": (0, 150, 150),   # Darker cyan
@@ -136,7 +125,6 @@ class UIManager:
                 "menu_icon_color": (200, 205, 255),
                 "menu_text_color": (220, 225, 255),
                 "accent_color": (130, 160, 255),
-                # Game object colors for dusk theme
                 "box_color": (180, 190, 255),      # Light blue with purple tint
                 "circle_color": (255, 190, 80),    # Soft orange
                 "triangle_color": (100, 220, 220), # Light cyan
@@ -151,7 +139,6 @@ class UIManager:
                 "menu_icon_color": (120, 110, 90),
                 "menu_text_color": (60, 50, 40),
                 "accent_color": (180, 130, 90),
-                # Game object colors for cream theme
                 "box_color": (120, 90, 60),        # Brown
                 "circle_color": (180, 120, 10),    # Dark orange-brown
                 "triangle_color": (0, 150, 120),   # Teal
@@ -173,7 +160,7 @@ class UIManager:
             {"label": "Help", "action": "SHOW_HELP"}
         ]
         
-        # Help text - Update to reflect swapped T/Shift+T controls
+        # Help text
         self.help_text = [
             "Controls:",
             "ESC - Quit game",
@@ -194,7 +181,7 @@ class UIManager:
         self.context_menu_items = []
         self.context_menu_sliders = []
         
-        # Menu icon (three dashes)
+        # Menu icon
         self.menu_icon_rect = pygame.Rect(self.width - 40, 10, 30, 30)
         
         # Button container
@@ -203,41 +190,34 @@ class UIManager:
         self.logger.info("UI Manager initialized")
         
     def update(self, dt):
-        """Update UI elements."""
         pass
         
     def draw(self, object_manager, physics_engine, clock):
-        """Draw UI elements with access to object manager and physics engine."""
-        # Draw FPS, object count, portal count, and gravity state
+        # Draw debug info
         self.draw_debug_info(object_manager, physics_engine, clock)
         
-        # Draw menu icon (three dashes)
+        # Draw menu icon
         self.draw_menu_icon()
         
-        # Draw main menu if visible
+        # Draw menus if visible
         if self.show_menu:
             self.draw_main_menu()
             
-        # Draw help menu if visible
         if self.show_help:
             self.draw_help_menu()
             
-        # Draw theme selector if visible
         if self.show_theme_selector:
             self.draw_theme_selector()
             
-        # Draw context menu if open
         if self.context_menu_open:
             self.draw_context_menu()
         
     def draw_debug_info(self, object_manager, physics_engine, clock):
-        """Draw debug information."""
         fps = int(clock.get_fps())
         object_count = len(object_manager.get_objects())
         portal_count = len(object_manager.get_portals())
         gravity_state = "ON" if physics_engine.gravity_on else "OFF"
         
-        # Render FPS, object count, portal count, and gravity state
         debug_text = [
             f"FPS: {fps}",
             f"Objects: {object_count}",
@@ -254,7 +234,6 @@ class UIManager:
             y_offset += 25
         
     def draw_menu_icon(self):
-        """Draw the menu icon (three dashes)."""
         theme = self.themes[self.current_theme]
         pygame.draw.rect(self.screen, theme["ui_element_color"], self.menu_icon_rect, border_radius=4)
         
@@ -280,26 +259,25 @@ class UIManager:
         pygame.draw.rect(self.screen, theme["ui_border_color"], self.menu_icon_rect, 1, border_radius=4)
         
     def draw_main_menu(self):
-        """Draw the main menu."""
         theme = self.themes[self.current_theme]
         menu_width = 150
         item_height = 35
         menu_height = len(self.menu_items) * item_height + 10
         
-        # Position below the menu icon
+        # Position below menu icon
         menu_x = self.menu_icon_rect.x - menu_width + self.menu_icon_rect.width
         menu_y = self.menu_icon_rect.y + self.menu_icon_rect.height + 5
         
-        # Ensure menu stays on screen
+        # Keep on screen
         if menu_y + menu_height > self.height:
             menu_y = self.height - menu_height - 5
         
-        # Draw menu background with rounded corners
+        # Draw background
         menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
         pygame.draw.rect(self.screen, theme["ui_element_color"], menu_rect, border_radius=6)
         pygame.draw.rect(self.screen, theme["ui_border_color"], menu_rect, 1, border_radius=6)
         
-        # Draw menu items
+        # Draw items
         mouse_pos = pygame.mouse.get_pos()
         for i, item in enumerate(self.menu_items):
             item_rect = pygame.Rect(
@@ -314,20 +292,19 @@ class UIManager:
             if hover:
                 pygame.draw.rect(self.screen, theme["ui_highlight_color"], item_rect, border_radius=4)
             
-            # Draw menu text
+            # Draw text
             text_surface = self.font.render(item["label"], True, theme["menu_text_color"])
             text_rect = text_surface.get_rect(midleft=(item_rect.x + 10, item_rect.centery))
             self.screen.blit(text_surface, text_rect)
         
     def draw_help_menu(self):
-        """Draw the help menu."""
         theme = self.themes[self.current_theme]
         menu_width = 350
-        menu_height = len(self.help_text) * 25 + 45  # Extra space for title
+        menu_height = len(self.help_text) * 25 + 45  # Extra for title
         menu_x = (self.width - menu_width) // 2
         menu_y = (self.height - menu_height) // 2
         
-        # Draw menu background with rounded corners
+        # Draw background
         menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
         pygame.draw.rect(self.screen, theme["ui_element_color"], menu_rect, border_radius=8)
         pygame.draw.rect(self.screen, theme["ui_border_color"], menu_rect, 2, border_radius=8)
@@ -338,14 +315,13 @@ class UIManager:
         self.screen.blit(title_surface, title_rect)
         
         # Draw help text
-        y_offset = menu_y + 40  # Start below title
+        y_offset = menu_y + 40
         for line in self.help_text:
             text_surface = self.font.render(line, True, theme["menu_text_color"])
             self.screen.blit(text_surface, (menu_x + 15, y_offset))
             y_offset += 25
             
     def draw_theme_selector(self):
-        """Draw the theme selection menu."""
         theme = self.themes[self.current_theme]
         theme_options = list(self.themes.keys())
         
@@ -358,7 +334,7 @@ class UIManager:
         menu_x = (self.width - menu_width) // 2
         menu_y = (self.height - menu_height) // 2
         
-        # Draw menu background with rounded corners
+        # Draw background
         menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
         pygame.draw.rect(self.screen, theme["ui_element_color"], menu_rect, border_radius=8)
         pygame.draw.rect(self.screen, theme["ui_border_color"], menu_rect, 2, border_radius=8)
@@ -378,13 +354,13 @@ class UIManager:
                 item_height - 5
             )
             
-            # Highlight current theme and hover
+            # Highlight current/hover
             is_current = option == self.current_theme
             hover = item_rect.collidepoint(mouse_pos)
             
             if is_current:
                 pygame.draw.rect(self.screen, theme["accent_color"], item_rect, border_radius=4)
-                text_color = theme["ui_element_color"]  # Contrast with accent color
+                text_color = theme["ui_element_color"]
             elif hover:
                 pygame.draw.rect(self.screen, theme["ui_highlight_color"], item_rect, border_radius=4)
                 text_color = theme["menu_text_color"]
@@ -397,8 +373,7 @@ class UIManager:
             self.screen.blit(text_surface, text_rect)
             
     def handle_mouse_event(self, event):
-        """Handle mouse events for UI elements."""
-        # Handle slider events if context menu is open
+        # Check sliders first
         if self.context_menu_open:
             for slider in self.context_menu_sliders:
                 if slider.handle_event(event):
@@ -406,28 +381,24 @@ class UIManager:
         
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.menu_icon_rect.collidepoint(event.pos):
-                # Toggle main menu when icon is clicked
+                # Toggle menu
                 self.show_menu = not self.show_menu
-                # Close other menus
                 self.show_help = False
                 self.show_theme_selector = False
                 self.logger.info(f"Main menu {'opened' if self.show_menu else 'closed'}")
                 return True
                 
             elif self.show_menu:
-                # Check if clicked on a menu item
+                # Menu item click check
                 menu_width = 150
                 item_height = 35
                 
-                # Calculate menu position
                 menu_x = self.menu_icon_rect.x - menu_width + self.menu_icon_rect.width
                 menu_y = self.menu_icon_rect.y + self.menu_icon_rect.height + 5
                 
-                # Ensure menu stays on screen
                 if menu_y + (len(self.menu_items) * item_height + 10) > self.height:
                     menu_y = self.height - (len(self.menu_items) * item_height + 10) - 5
                 
-                # Check each menu item
                 for i, item in enumerate(self.menu_items):
                     item_rect = pygame.Rect(
                         menu_x + 5,
@@ -436,7 +407,6 @@ class UIManager:
                         item_height - 5
                     )
                     if item_rect.collidepoint(event.pos):
-                        # Handle menu item action
                         if item["action"] == "SHOW_HELP":
                             self.show_help = True
                             self.show_theme_selector = False
@@ -448,28 +418,26 @@ class UIManager:
                         self.logger.info(f"Selected menu item: {item['label']}")
                         return True
                 
-                # Close menu if clicked outside
+                # Close if clicked outside
                 self.show_menu = False
                 return True
                 
             elif self.show_help:
-                # Close help menu if clicked elsewhere
+                # Close help menu
                 self.show_help = False
                 return True
                 
             elif self.show_theme_selector:
-                # Check if clicked on a theme option
+                # Theme selection check
                 theme_options = list(self.themes.keys())
                 menu_width = 180
                 item_height = 35
                 title_height = 30
                 menu_height = len(theme_options) * item_height + title_height + 15
                 
-                # Center on screen
                 menu_x = (self.width - menu_width) // 2
                 menu_y = (self.height - menu_height) // 2
                 
-                # Check each theme option
                 for i, option in enumerate(theme_options):
                     item_rect = pygame.Rect(
                         menu_x + 15,
@@ -482,21 +450,19 @@ class UIManager:
                         self.current_theme = option
                         self.logger.info(f"Changed theme to {option}")
                         self.show_theme_selector = False
-                        # Return a command to update the renderer and objects
                         if old_theme != option:
                             return "THEME_CHANGED"
                         return True
                 
-                # Close theme selector if clicked outside
+                # Close if clicked outside
                 self.show_theme_selector = False
                 return True
             
-            # Check for context menu clicks
+            # Context menu clicks
             if self.context_menu_open:
-                # Handle context menu item selection
-                menu_width = 220  # Wider for slider menu
+                menu_width = 220
                 item_height = 30
-                slider_spacing = 60  # Space for each slider
+                slider_spacing = 60
                 menu_height = len(self.context_menu_items) * item_height + len(self.context_menu_sliders) * slider_spacing + 20
                 
                 menu_x = min(self.context_menu_pos[0], self.width - menu_width - 10)
@@ -505,14 +471,13 @@ class UIManager:
                 menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
                 
                 if not menu_rect.collidepoint(event.pos):
-                    # Close menu if clicked outside
+                    # Close if outside
                     self.close_context_menu()
                     return True
                 
-                # Calculate y-offset for items
+                # Check menu items
                 y_offset = menu_y + 30 + len(self.context_menu_sliders) * slider_spacing
                 
-                # Check each menu item
                 for i, item in enumerate(self.context_menu_items):
                     item_rect = pygame.Rect(
                         menu_x + 10,
@@ -521,22 +486,7 @@ class UIManager:
                         item_height - 5
                     )
                     if item_rect.collidepoint(event.pos):
-                        # Handle menu item action
-                        if item["action"].startswith("APPLY_CHANGES"):
-                            # Apply changes from sliders
-                            obj_id = item["action"].split(":")[1]
-                            
-                            # Get values from sliders
-                            if len(self.context_menu_sliders) >= 1:
-                                size_value = self.context_menu_sliders[0].get_value()
-                                angle_value = self.context_menu_sliders[1].get_value()
-                                
-                                # Close menu
-                                self.close_context_menu()
-                                
-                                # Return combined action
-                                return f"RESIZE_AND_ROTATE:{obj_id}:{size_value}:{angle_value}"
-                        elif item["action"].startswith("DELETE"):
+                        if item["action"].startswith("DELETE"):
                             self.close_context_menu()
                             return item["action"]
                         self.close_context_menu()
@@ -546,21 +496,18 @@ class UIManager:
         return False
         
     def open_context_menu(self, obj, x, y):
-        """Open a context menu for manipulating an object."""
         self.context_menu_open = True
         self.context_menu_object = obj
         self.context_menu_pos = (x, y)
         
-        # Create menu items and sliders based on object type
         self.context_menu_items = []
         self.context_menu_sliders = []
         
-        # Calculate menu dimensions first to ensure proper positioning
-        menu_width = 280  # Increased width to prevent overflow
-        slider_spacing = 70  # Increase spacing for sliders
+        menu_width = 280
+        slider_spacing = 70
         
-        if hasattr(obj, 'obj_type'):  # It's a GameObject
-            # Add size slider
+        if hasattr(obj, 'obj_type'):  # GameObject
+            # Size slider
             if obj.obj_type == "CIRCLE":
                 current_size = obj.radius
                 min_size = current_size * 0.5
@@ -583,23 +530,18 @@ class UIManager:
                 size_slider.set_preview_callback(lambda val: self.preview_object_size(obj, val))
                 self.context_menu_sliders.append(size_slider)
             
-            # Add rotation slider
+            # Rotation slider
             current_angle = math.degrees(obj.angle) % 360
             angle_slider = Slider(x + 20, y + 50 + slider_spacing, menu_width - 40, 20, 0, 360, current_angle, "Angle")
             angle_slider.set_preview_callback(lambda val: self.preview_object_rotation(obj, val))
             self.context_menu_sliders.append(angle_slider)
             
-            # Store original values for cancel functionality
-            obj.original_size = current_size
-            obj.original_angle = obj.angle
-            
-            # Add buttons
+            # Delete button
             self.context_menu_items = [
-                {"label": "Apply Changes", "action": f"APPLY_CHANGES:{obj.id}"},
                 {"label": "Delete", "action": f"DELETE:{obj.id}"}
             ]
-        else:  # It's a Portal
-            # Add size slider
+        else:  # Portal
+            # Size slider
             current_size = obj.height
             min_size = current_size * 0.5
             max_size = current_size * 2.0
@@ -607,87 +549,79 @@ class UIManager:
             size_slider.set_preview_callback(lambda val: self.preview_portal_size(obj, val))
             self.context_menu_sliders.append(size_slider)
             
-            # Add rotation slider
+            # Rotation slider
             current_angle = math.degrees(obj.angle) % 360
             angle_slider = Slider(x + 20, y + 50 + slider_spacing, menu_width - 40, 20, 0, 360, current_angle, "Angle")
             angle_slider.set_preview_callback(lambda val: self.preview_portal_rotation(obj, val))
             self.context_menu_sliders.append(angle_slider)
             
-            # Store original values
-            obj.original_size = current_size
-            obj.original_angle = obj.angle
-            
-            # Add buttons
+            # Delete button
             self.context_menu_items = [
-                {"label": "Apply Changes", "action": f"APPLY_CHANGES:{obj.id}"},
                 {"label": "Delete", "action": f"DELETE:{obj.id}"}
             ]
         
         self.logger.info(f"Opened context menu with sliders for object {obj.id}")
     
     def preview_object_size(self, obj, value):
-        """Preview object size change without permanently applying it."""
-        # Temporarily update object size for preview
+        # Update size
         if obj.obj_type == "CIRCLE":
             obj.radius = value
+            if hasattr(obj, 'body') and obj.body:
+                for fixture in obj.body.fixtures:
+                    if hasattr(fixture.shape, 'radius'):
+                        fixture.shape.radius = value
         elif obj.obj_type == "TRIANGLE":
             obj.side_length = value
+            if hasattr(obj, 'body') and obj.body:
+                obj.update_physics_body()
         else:  # BOX
             obj.width = value
             obj.height = value
+            if hasattr(obj, 'body') and obj.body:
+                for fixture in obj.body.fixtures:
+                    if hasattr(fixture.shape, 'width') and hasattr(fixture.shape, 'height'):
+                        fixture.shape.width = value
+                        fixture.shape.height = value
+                        
+        # For reset prevention
+        obj.original_size = value
             
     def preview_object_rotation(self, obj, value):
-        """Preview object rotation without permanently applying it."""
-        # Convert degrees to radians for preview
+        # Apply rotation
         radian_value = math.radians(value)
         obj.angle = radian_value
-        # If object has a body, update its angle too for physics preview
+        
         if hasattr(obj, 'body') and obj.body:
             obj.body.angle = radian_value
+            
+        # For reset prevention
+        obj.original_angle = radian_value
         
     def preview_portal_size(self, portal, value):
-        """Preview portal size change."""
-        # Keep width/height ratio for portals
+        # Keep ratio
         ratio = portal.width / portal.height
         portal.height = value
         portal.width = value * ratio
         
+        if hasattr(portal, 'sensor') and portal.sensor:
+            # Physics will handle rebuild
+            self.logger.info(f"Updated portal {portal.id} size to {value}")
+            
+        # For reset prevention
+        portal.original_size = value
+        
     def preview_portal_rotation(self, portal, value):
-        """Preview portal rotation."""
         radian_value = math.radians(value)
         portal.angle = radian_value
-        # If portal has a sensor, update its angle too
+        
         if hasattr(portal, 'sensor') and portal.sensor:
             portal.sensor.angle = radian_value
+            self.logger.info(f"Updated portal {portal.id} angle to {value} degrees")
+            
+        # For reset prevention
+        portal.original_angle = radian_value
             
     def close_context_menu(self):
-        """Close the context menu."""
-        # Reset any temporary changes if not applied
-        if self.context_menu_object:
-            if hasattr(self.context_menu_object, 'original_size'):
-                # Restore original values if needed
-                if hasattr(self.context_menu_object, 'obj_type'):  # Game object
-                    if self.context_menu_object.obj_type == "CIRCLE":
-                        self.context_menu_object.radius = self.context_menu_object.original_size
-                    elif self.context_menu_object.obj_type == "TRIANGLE":
-                        self.context_menu_object.side_length = self.context_menu_object.original_size
-                    else:  # BOX
-                        self.context_menu_object.width = self.context_menu_object.original_size
-                        self.context_menu_object.height = self.context_menu_object.original_size
-                else:  # Portal
-                    ratio = self.context_menu_object.width / self.context_menu_object.height
-                    self.context_menu_object.height = self.context_menu_object.original_size
-                    self.context_menu_object.width = self.context_menu_object.original_size * ratio
-                    
-                # Restore original angle
-                if hasattr(self.context_menu_object, 'original_angle'):
-                    self.context_menu_object.angle = self.context_menu_object.original_angle
-                
-                # Remove temporary attributes
-                delattr(self.context_menu_object, 'original_size')
-                if hasattr(self.context_menu_object, 'original_angle'):
-                    delattr(self.context_menu_object, 'original_angle')
-                    
         self.context_menu_open = False
         self.context_menu_object = None
         self.context_menu_items = []
@@ -695,44 +629,41 @@ class UIManager:
         self.logger.info("Closed context menu")
         
     def draw_context_menu(self):
-        """Draw the context menu with sliders."""
         if not self.context_menu_open:
             return
             
         theme = self.themes[self.current_theme]
         
-        # Calculate menu dimensions (account for sliders) - increase width to prevent overflow
-        menu_width = 280  # Increased width to prevent slider overflow
+        # Calculate dimensions
+        menu_width = 280
         item_height = 30
-        slider_spacing = 70  # Increased spacing for sliders
-        menu_height = len(self.context_menu_items) * item_height + len(self.context_menu_sliders) * slider_spacing + 40  # More padding
+        slider_spacing = 70
+        menu_height = len(self.context_menu_items) * item_height + len(self.context_menu_sliders) * slider_spacing + 40
         
-        # Menu position (ensure it stays on screen)
+        # Position on screen
         menu_x = min(self.context_menu_pos[0], self.width - menu_width - 10)
         menu_y = min(self.context_menu_pos[1], self.height - menu_height - 10)
         
-        # Draw menu background with rounded corners
+        # Draw background
         menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
         pygame.draw.rect(self.screen, theme["ui_element_color"], menu_rect, border_radius=6)
         pygame.draw.rect(self.screen, theme["ui_border_color"], menu_rect, 1, border_radius=6)
         
-        # Draw menu title - positioned higher to avoid overlap
-        title_text = "Object Properties"
-        title_surface = self.title_font.render(title_text, True, theme["accent_color"])
-        title_rect = title_surface.get_rect(midtop=(menu_x + menu_width // 2, menu_y + 10))
-        self.screen.blit(title_surface, title_rect)
         
-        # Update slider positions - adjust width to fit in menu
-        y_offset = menu_y + 50  # Increased to avoid overlap with title
+        # Draw sliders
+        y_offset = menu_y + 50
         for slider in self.context_menu_sliders:
             slider.rect.x = menu_x + 20
             slider.rect.y = y_offset
-            slider.rect.width = menu_width - 40  # Adjust slider width to fit menu
-            slider.update_handle_position()  # Important: update handle after changing dimensions
+            slider.rect.width = menu_width - 40
+            slider.update_handle_position()
             slider.draw(self.screen, theme)
             y_offset += slider_spacing
         
-        # Draw menu items
+        # Move delete button up slightly (20 pixels)
+        y_offset -= 20
+        
+        # Draw buttons
         for i, item in enumerate(self.context_menu_items):
             item_rect = pygame.Rect(
                 menu_x + 10,
@@ -741,151 +672,79 @@ class UIManager:
                 item_height - 5
             )
             
-            # Check if mouse is hovering over item
+            # Store the rectangle for click detection
+            item["rect"] = item_rect
+            
+            # Highlight on hover
             mouse_pos = pygame.mouse.get_pos()
             hover = item_rect.collidepoint(mouse_pos)
             
-            # Draw item background
             if hover:
                 pygame.draw.rect(self.screen, theme["ui_highlight_color"], item_rect, border_radius=4)
             
-            # Draw item text
+            # Draw text
             text_surface = self.font.render(item["label"], True, theme["menu_text_color"])
             text_rect = text_surface.get_rect(center=item_rect.center)
             self.screen.blit(text_surface, text_rect)
             
     def handle_context_menu_click(self, x, y):
-        """Handle clicks on the context menu."""
         if not self.context_menu_open:
             return None
+        
+        self.logger.info(f"Context menu click detected at ({x}, {y})")
             
-        # Calculate menu dimensions - MUST MATCH values used in draw_context_menu
-        menu_width = 280  # Match width with draw_context_menu
+        # Direct check if any button was clicked
+        for item in self.context_menu_items:
+            if "rect" in item and item["rect"].collidepoint(x, y):
+                # Found a clicked button
+                if item["action"].startswith("DELETE"):
+                    obj_id = item["action"].split(":")[1]
+                    self.logger.info(f"DELETE button clicked for object {obj_id}")
+                    self.logger.info(f"Returning delete command: {item['action']}")
+                    self.close_context_menu()
+                    return item["action"]
+                self.close_context_menu()
+                return item["action"]
+        
+        # Calculate menu dimensions for checking outside clicks
+        menu_width = 280
         item_height = 30
-        slider_spacing = 70  # Match with draw_context_menu
+        slider_spacing = 70
         menu_height = len(self.context_menu_items) * item_height + len(self.context_menu_sliders) * slider_spacing + 40
         
         menu_x = min(self.context_menu_pos[0], self.width - menu_width - 10)
         menu_y = min(self.context_menu_pos[1], self.height - menu_height - 10)
         
-        # Calculate y-offset for items - must match draw_context_menu
-        y_offset = menu_y + 50 + len(self.context_menu_sliders) * slider_spacing
-        
-        # Check each menu item
-        for i, item in enumerate(self.context_menu_items):
-            item_rect = pygame.Rect(
-                menu_x + 10,
-                y_offset + i * item_height,
-                menu_width - 20,
-                item_height - 5
-            )
-            if item_rect.collidepoint(x, y):
-                if item["action"].startswith("APPLY_CHANGES"):
-                    # When applying changes, make preview changes permanent
-                    obj_id = item["action"].split(":")[1]
-                    
-                    # Get values from sliders
-                    if len(self.context_menu_sliders) >= 2:
-                        size_value = self.context_menu_sliders[0].get_value()
-                        angle_value = self.context_menu_sliders[1].get_value()
-                        
-                        # Ensure we have the latest values applied to the object
-                        if hasattr(self.context_menu_object, 'obj_type'):  # Game object
-                            self.preview_object_size(self.context_menu_object, size_value)
-                            self.preview_object_rotation(self.context_menu_object, angle_value)
-                        else:  # Portal
-                            self.preview_portal_size(self.context_menu_object, size_value)
-                            self.preview_portal_rotation(self.context_menu_object, angle_value)
-                        
-                        # Save original values to prevent them from being reset
-                        if self.context_menu_object:
-                            self.context_menu_object.original_size = size_value
-                            self.context_menu_object.original_angle = math.radians(angle_value)
-                        
-                        # Log the action for debugging
-                        self.logger.info(f"Applying changes: size={size_value}, angle={angle_value}")
-                        
-                        # Close menu
-                        self.context_menu_open = False
-                        
-                        # Return combined action with the actual object ID
-                        return f"RESIZE_AND_ROTATE:{obj_id}:{size_value}:{angle_value}"
-                elif item["action"].startswith("DELETE"):
-                    self.close_context_menu()
-                    return item["action"]
-                
-        # Close context menu if clicked outside
+        # Close if clicked outside
         menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
         if not menu_rect.collidepoint(x, y):
+            self.logger.info("Click outside context menu, closing menu")
             self.close_context_menu()
+        else:
+            self.logger.info("Click inside context menu but not on a button")
             
         return None
-
-    def update_object_original_values(self, obj_id, size_value, angle_value):
-        """Update the original values of an object after applying changes."""
-        # This method is called from game_loop.py after changes are applied
-        self.logger.info(f"Setting permanent values for {obj_id}: size={size_value}, angle={angle_value}")
-        
-        # Find the object in the game by ID (needed if context_menu_object is already None)
-        if self.context_menu_object and self.context_menu_object.id == obj_id:
-            obj = self.context_menu_object
-        else:
-            # We don't have direct access to objects here
-            # But we don't need it since original values are already saved before menu closes
-            return
-            
-        # Update the object's permanent values
-        if hasattr(obj, 'obj_type'):  # Game object
-            if obj.obj_type == "CIRCLE":
-                obj.radius = size_value
-            elif obj.obj_type == "TRIANGLE":
-                obj.side_length = size_value
-            else:  # BOX
-                obj.width = size_value
-                obj.height = size_value
-        else:  # Portal
-            ratio = obj.width / obj.height
-            obj.height = size_value
-            obj.width = size_value * ratio
-            
-        # Set the angle (in radians)
-        obj.angle = math.radians(angle_value)
     
     def get_background_color(self):
-        """Get the current theme's background color."""
         return self.themes[self.current_theme]["bg_color"]
     
     def get_box_color(self):
-        """Get the current theme's box color."""
         return self.themes[self.current_theme]["box_color"]
         
     def get_circle_color(self):
-        """Get the current theme's circle color."""
         return self.themes[self.current_theme]["circle_color"]
         
     def get_triangle_color(self):
-        """Get the current theme's triangle color."""
         return self.themes[self.current_theme].get("triangle_color", (0, 200, 200))
         
     def get_portal_tint(self):
-        """Get the current theme's portal tint factor."""
         return self.themes[self.current_theme]["portal_tint"]
         
     def toggle_theme(self):
-        """Cycle to the next theme."""
+        # Cycle to next theme
         theme_options = list(self.themes.keys())
         current_index = theme_options.index(self.current_theme)
         next_index = (current_index + 1) % len(theme_options)
         self.current_theme = theme_options[next_index]
         self.logger.info(f"Changed theme to {self.current_theme}")
         return self.current_theme
-    
-    def update_object_original_values(self, obj_id, size_value, angle_value):
-        """Update the original values of an object after applying changes.
-        This is needed to ensure changes stay applied when closing the menu."""
-        if self.context_menu_object and self.context_menu_object.id == obj_id:
-            if hasattr(self.context_menu_object, 'original_size'):
-                self.context_menu_object.original_size = size_value
-            if hasattr(self.context_menu_object, 'original_angle'):
-                self.context_menu_object.original_angle = math.radians(angle_value)
-            self.logger.info(f"Updated original values for object {obj_id}")
