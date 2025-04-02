@@ -52,7 +52,7 @@ DEFAULT_BOX_SIZE = (32 / PPM, 32 / PPM)
 # Portal Defaults
 DEFAULT_PORTAL_HEIGHT = 60 / PPM
 DEFAULT_PORTAL_WIDTH = 10 / PPM
-PORTAL_COOLDOWN = 5 # Seconds
+PORTAL_COOLDOWN = 0.5
 
 # --- Helper Functions for Coordinate Conversion ---
 
@@ -74,8 +74,6 @@ def to_pygame(coords):
 def to_box2d(coords):
     """Convert Pygame coordinates (pixels) to Box2D coordinates (meters)."""
     if isinstance(coords, (tuple, list)) and len(coords) == 2:
-        # Adjust y-coordinate based on Pygame's inverted y-axis
-        # Return a Box2D vector instead of a tuple
         return Box2D.b2Vec2(coords[0] / PPM, (HEIGHT - coords[1]) / PPM)
     elif isinstance(coords, (int, float)):
         print(f"Warning: to_box2d received scalar {coords}, returning float.")
@@ -96,12 +94,6 @@ def scalar_to_box2d(scalar):
      """Convert Pygame scalar (pixels) to Box2D scalar (meters)."""
      return scalar / PPM
 
-# Convenience aliases for Box2D types directly
-# Avoid redefining types like b2Vec2 = Box2D.b2Vec2 here if possible,
-# just use Box2D.b2Vec2 directly in the code for clarity.
-
-# --- User Data Types for Box2D Bodies ---
-# Helps identify body types during collisions
 USER_DATA_OBJECT = 'object'
 USER_DATA_PORTAL = 'portal'
 USER_DATA_WALL = 'wall'

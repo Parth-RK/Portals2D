@@ -22,6 +22,7 @@ class Portal:
 
         self.cooldown_end_times = {}
         self.cooldown_duration = PORTAL_COOLDOWN
+        self.last_exit_pos = {}
 
     def link(self, other_portal):
         """Establish a two-way link between portals."""
@@ -61,8 +62,23 @@ class Portal:
 
         exit_angular_velocity = entry_obj_body.angularVelocity
 
+        # Improved safety offset calculation
         exit_normal = exit_portal.body.GetWorldVector((0, 1))
-        safety_offset_distance = 0.05
+        
+        # Increase safety offset to prevent immediate re-entry
+        safety_offset_distance = 0.2  # Increased from 0.05
+        
+        # Apply velocity-based additional offset
+        velocity_magnitude = exit_velocity.length
+        if velocity_magnitude > 0.1:
+            # Add extra offset in the direction of motion to prevent bouncing back
+            vel_direction = Box2D.b2Vec2(exit_velocity)
+            if vel_direction.length > 0:
+                vel_direction.Normalize()
+                # Add velocity-based offset
+                exit_position += vel_direction * min(velocity_magnitude * 0.05, 0.1)
+        
+        # Final position offset
         exit_position += exit_normal * safety_offset_distance
 
         return exit_position, exit_angle, exit_velocity, exit_angular_velocity
@@ -89,8 +105,13 @@ class Portal:
         return obj_id not in self.cooldown_end_times or current_time >= self.cooldown_end_times[obj_id]
 
     def start_cooldown(self, obj_id, current_time):
-        """Start the teleport cooldown for a specific object ID."""
+        """Start the teleport cooldown for a specific object ID on both portals in the pair."""
+        # Apply cooldown to this portal
         self.cooldown_end_times[obj_id] = current_time + self.cooldown_duration
+        
+        # Also apply cooldown to the linked portal
+        if self.linked_portal:
+            self.linked_portal.cooldown_end_times[obj_id] = current_time + self.cooldown_duration
 
     def schedule_deletion(self):
         self.marked_for_deletion = True
@@ -240,7 +261,12 @@ class PortalManager:
                  obj.teleporting = False # Reset flag
                  continue # Skip if on cooldown
 
+            # Get the transforms
             exit_pos, exit_angle, exit_vel, exit_ang_vel = entry_portal.get_exit_transform(obj.body)
+            
+            # Store last exit position to help with anti-oscillation logic
+            exit_portal.last_exit_pos[obj.id] = Box2D.b2Vec2(exit_pos)
+            entry_portal.last_exit_pos[obj.id] = Box2D.b2Vec2(exit_pos)  # Store in both portals
 
             try:
                 obj.body.transform = (Box2D.b2Vec2(exit_pos), exit_angle)
@@ -252,14 +278,13 @@ class PortalManager:
                  obj.teleporting = False
                  continue
 
-
             obj.update_from_physics()
 
+            # Apply cooldown to both portals
             exit_portal.start_cooldown(obj.id, current_time)
 
             obj.teleporting = False
             processed_objects_this_frame.add(obj)
-
 
         self.teleport_queue.clear()
 

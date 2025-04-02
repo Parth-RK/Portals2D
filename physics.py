@@ -46,8 +46,15 @@ class PortalContactListener(Box2D.b2ContactListener):
             relative_vel = obj.body.GetLinearVelocityFromWorldPoint(object_center_world)
 
             dot_product = relative_pos.dot(relative_vel)
-
-            if dot_product < 0.1:
+            
+            last_exit_pos = getattr(portal.linked_portal, 'last_exit_pos', {}).get(obj.id)
+            
+            if last_exit_pos:
+                distance_from_exit = (object_center_world - last_exit_pos).length
+                if distance_from_exit < 0.5:
+                    return
+            
+            if dot_product < 0:
                 self.portal_manager.queue_teleportation(obj, portal)
 
 
