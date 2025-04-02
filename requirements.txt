@@ -1,3 +1,2 @@
-# Core dependencies for 2D Portals Game
-pygame==2.5.2          # Graphics, audio, input handling and window management
-box2d==2.3.10        # 2D physics engine for realistic portal interactions
+pygame>=2.1.0
+Box2D-py>=2.3.8
