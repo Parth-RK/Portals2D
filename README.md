@@ -148,4 +148,4 @@ The "docs" folder contains detailed documentation for the 2D Portals Game projec
 
 - [Gameplay](docs/gameplay.md): Instructions on how to play the game.
 - [Technical Details](docs/technical.md): In-depth details about the implementation.
-- [Code Structure](docs/code_structure.md): Functionalities and their purpose
+- [Code Structure](docs/core_system.md): Functionalities and their purpose
