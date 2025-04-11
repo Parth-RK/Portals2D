@@ -68,16 +68,18 @@ python main.py
 ```
 Portals2D/
 ├── docs/               # Documentation
-├── logs/               # Game logs (created during runtime)
-├── src/                # Source code
-│   ├── core/           # Core game components
-│   ├── game_objects/   # Game object definitions
-│   ├── physics/        # Physics engine integration
-│   ├── rendering/      # Rendering components
-│   ├── ui/             # User interface components
-│   └── utils/          # Utility functions and classes
+├── game.py             # Main game class orchestrating the game loop
+├── input.py            # Handles user input and events
+├── objects.py          # Game object definitions
+├── physics.py          # Physics engine integration
+├── portals.py          # Portal mechanics and teleportation logic
+├── renderer.py         # Rendering components
+├── settings.py         # Configuration and constants
+├── ui.py               # User interface components
+├── utils.py            # Utility functions and classes
 ├── main.py             # Game entry point
-└── requirements.txt    # Project dependencies
+├── requirements.txt    # Project dependencies
+└── LICENSE             # License file
 ```
 
 ## Implementation Details
@@ -103,5 +105,13 @@ This project is structured with modularity in mind, making it easy to extend wit
 - Extend physics functionality in the `physics` module.
 - Add visual effects in the `rendering` module.
 
-## License
-[Specify your license here]
+## Documentation for 2D Portals Game
+
+The "docs" folder contains detailed documentation for the 2D Portals Game project. Below is an index of the available documentation files:
+
+- [Overview](overview.md): General information about the project.
+- [Setup Instructions](setup.md): Steps to set up and run the game.
+- [Gameplay](gameplay.md): Instructions on how to play the game.
+- [Project Structure](structure.md): Explanation of the project's directory structure.
+- [Technical Details](technical.md): In-depth details about the implementation.
+- [API Reference](api.md): Reference for the codebase and its components.

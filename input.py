@@ -1,5 +1,9 @@
 import pygame
-from settings import to_box2d
+# Import Portal specifically for type checking later
+from portals import Portal
+# Import settings to access the new constant
+from settings import to_box2d, MIN_PORTAL_DRAG_DISTANCE
+import math # For distance calculation if needed (we'll use squared)
 
 class InputManager:
     def __init__(self, game_instance):
@@ -60,15 +64,29 @@ class InputManager:
                         if obj_to_drag:
                             self.game.object_manager.start_drag(obj_to_drag, self.mouse_pos)
                         else:
+                            # Start portal creation, it implicitly stores the start_pos_pygame now
                             self.game.portal_manager.start_portal_creation(self.mouse_pos)
 
                     elif event.button == 3:
+                        # --- MODIFIED: Right-click handling ---
                         if self.game.portal_manager.creation_state['active']:
                              self.game.portal_manager.cancel_portal_creation()
                         else:
                              obj_to_delete = self.game.object_manager.get_object_at(self.mouse_pos)
                              if obj_to_delete:
                                   self.game.object_manager.delete_object(obj_to_delete)
+                             else:
+                                  # --- ADDED: Check for portal deletion if no object found ---
+                                  # Use physics manager directly to query sensors
+                                  potential_portal = self.game.physics_manager.get_body_at_pygame_point(
+                                      self.mouse_pos, include_sensors=True
+                                  )
+                                  # Check if the result is actually a Portal instance
+                                  if isinstance(potential_portal, Portal):
+                                      # Found a portal, delete its pair
+                                      print(f"Input: Deleting portal pair {potential_portal.pair_id} via right-click.")
+                                      self.game.portal_manager.delete_portal_pair(potential_portal.pair_id)
+                                  # --- End of Added Portal Deletion Check ---
                              
                 elif event.type == pygame.MOUSEBUTTONUP:
                     button = event.button
@@ -77,7 +95,27 @@ class InputManager:
                         if self.game.object_manager.selected_object:
                             self.game.object_manager.stop_drag(apply_throw=True, mouse_vel_pygame=self.mouse_rel)
                         elif self.game.portal_manager.creation_state['active']:
-                             self.game.portal_manager.finish_portal_creation(self.mouse_pos)
+                             # --- MODIFIED: Check minimum distance before finishing ---
+                             start_pos = self.game.portal_manager.creation_state.get('start_pos_pygame')
+                             end_pos = self.mouse_pos
+                             if start_pos:
+                                 dx = end_pos[0] - start_pos[0]
+                                 dy = end_pos[1] - start_pos[1]
+                                 # Use squared distance to avoid sqrt calculation
+                                 distance_sq = dx*dx + dy*dy
+                                 min_dist_sq = MIN_PORTAL_DRAG_DISTANCE ** 2
+
+                                 if distance_sq > min_dist_sq:
+                                     # Sufficient distance, finish creation
+                                     self.game.portal_manager.finish_portal_creation(end_pos)
+                                 else:
+                                     # Drag was too short, cancel silently or with a log
+                                     # print("Portal drag too short, creation cancelled.")
+                                     self.game.portal_manager.cancel_portal_creation()
+                             else:
+                                 # Should not happen if state is active, but cancel defensively
+                                 self.game.portal_manager.cancel_portal_creation()
+                             # --- End of Modified Minimum Distance Check ---
 
             if event.type == pygame.MOUSEMOTION:
                  if self.game.object_manager.mouse_joint:
