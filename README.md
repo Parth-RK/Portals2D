@@ -90,17 +90,16 @@ Portals.exe > Properties > Digital Signature > Portals2D Details > View Certific
 - **G**: Toggle gravity on/off
 - **B**: Create a box at cursor position
 - **C**: Create a circle at cursor position
-- **P**: Create portals (press twice to create a pair)
+- **D**: Debug Stats
 - **Left Click**: Grab and drag objects
 - **Release Left Click**: Throw the object
-- **Right Click**: Open object properties menu (resize, rotate)
+- **Right Click**: click on object/portal to delete it 
 
 ### Gameplay
 1. Create objects using the B and C keys.
-2. Place portals on surfaces using the P key (press twice for a pair).
-3. Objects will teleport between linked portals, conserving momentum.
-4. Drag objects with the left mouse button and throw them by releasing.
-5. Right-click on objects to resize or rotate them.
+2. Objects will teleport between linked portals, conserving momentum.
+3. Drag objects with the left mouse button and throw them by releasing.
+4. Right-click on objects to delete them.
 
 ## Project Structure
 ```
@@ -147,9 +146,6 @@ This project is structured with modularity in mind, making it easy to extend wit
 
 The "docs" folder contains detailed documentation for the 2D Portals Game project. Below is an index of the available documentation files:
 
-- [Overview](overview.md): General information about the project.
-- [Setup Instructions](setup.md): Steps to set up and run the game.
-- [Gameplay](gameplay.md): Instructions on how to play the game.
-- [Project Structure](structure.md): Explanation of the project's directory structure.
-- [Technical Details](technical.md): In-depth details about the implementation.
-- [API Reference](api.md): Reference for the codebase and its components.
+- [Gameplay](docs/gameplay.md): Instructions on how to play the game.
+- [Technical Details](docs/technical.md): In-depth details about the implementation.
+- [Code Structure](docs/code_structure.md): Functionalities and their purpose
