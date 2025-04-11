@@ -118,13 +118,10 @@ This document provides a more detailed look into the implementation and logic of
 *   **Button:** A simple clickable element with 'normal', 'hover', 'pressed' states, visual feedback, and a `callback` function executed on click. Handles its own events via `Button.handle_event()`.
 *   **Event Handling:** `UIManager.handle_event` iterates elements *in reverse* (topmost first) and passes the event. If an element handles it, processing stops for that event. This ensures UI clicks don't accidentally interact with the game world underneath.
 *   **Rendering:** `UIManager.get_elements()` provides the list to the `Renderer`, which calls each element's `draw()` method.
-```
-
 ---
 
 **File: `docs/Configuration.md`**
 
-```markdown
 # Configuration (`settings.py`)
 
 The `settings.py` file is the central place for configuring the appearance, physics, and behavior of the Portals2D sandbox.
