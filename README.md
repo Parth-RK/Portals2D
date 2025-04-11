@@ -31,13 +31,16 @@ cd Portals2D
 ```
 
 ### 2. Set Up a Virtual Environment (recommended)
+Create a virtual environment
 ```bash
-# Create a virtual environment
 python -m venv venv
-
-# Activate the virtual environment
+```
+Activate the virtual environment
+```bash
 # On Windows:
 venv\Scripts\activate
+```
+```bash
 # On macOS/Linux:
 source venv/bin/activate
 ```
